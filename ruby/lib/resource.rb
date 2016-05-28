@@ -19,77 +19,79 @@
 require 'rest-client'
 require 'json'
 
-class Resource
-  def initialize(client, relpath = '')
-    @client = client
-    @path = relpath.chomp('/')
-    @retries = 3
-    @retry_sleep = 3
-  end
-
-  def base_url
-    @client.base_url
-  end
-
-  def _join_uri(relpath)
-    if relpath
-      ::File.join(@path, relpath)
-    else
-      @path
-    end
-  end
-
-  def invoke(method, relpath = nil, params = nil, data = nil, headers = nil)
-    # Invoke an API method
-    path = _join_uri(relpath)
-    resp = @client.execute(method, path, params, data, headers)
-
-    begin
-      body = resp.body
-    rescue => e
-      raise "Command '#{method} #{path}' failed: #{e}"
+class CmApi
+  class Resource
+    def initialize(client, relpath = '')
+      @client = client
+      @path = relpath.chomp('/')
+      @retries = 3
+      @retry_sleep = 3
     end
 
-    puts "DEBUG #{method} Got response: #{body[0,32]}#{body.length > 32 ? '...' : ''}"
-
-    # TODO: detect if response is application/json and catch json parse error
-    begin
-      json_hash = JSON.parse(body)
-      return json_hash
-    rescue
-      return body
+    def base_url
+      @client.base_url
     end
-  end
 
-  def get(relpath = nil, params = nil)
- #   for retry in 0..@retries+1
- #      sleep(@retry_sleep) if retry
-      begin
-        return invoke(:get, relpath, params)
-      rescue => e
-        # TODO: detect timeout and retry
-        raise e
+    def _join_uri(relpath)
+      if relpath
+        ::File.join(@path, relpath)
+      else
+        @path
       end
-  #  end
-  end
-          
-  def delete(relpath = nil, params = nil)
-    return invoke(:delete, relpath, params)
-  end
+    end
 
-  def post(relpath = nil, params = nil, data = nil, contenttype = nil)
-    return invoke(:post, relpath, params, data, _make_headers(contenttype))
-  end
+    def invoke(method, relpath = nil, params = nil, data = nil, headers = nil)
+      # Invoke an API method
+      path = _join_uri(relpath)
+      resp = @client.execute(method, path, params, data, headers)
 
-  def put(relpath = nil, params = nil, data = nil, contenttype = nil)
-    return invoke(:put, relpath, params, data, _make_headers(contenttype))
-  end
+      begin
+        body = resp.body
+      rescue => e
+        raise "Command '#{method} #{path}' failed: #{e}"
+      end
 
-  def _make_headers(contenttype = nil)
-    if contenttype
-      return { 'Content-Type' => contenttype }
-    else
-      return nil
+      puts "DEBUG #{method} Got response: #{body[0,32]}#{body.length > 32 ? '...' : ''}"
+
+      # TODO: detect if response is application/json and catch json parse error
+      begin
+        json_hash = JSON.parse(body)
+        return json_hash
+      rescue
+        return body
+      end
+    end
+
+    def get(relpath = nil, params = nil)
+   #   for retry in 0..@retries+1
+   #      sleep(@retry_sleep) if retry
+        begin
+          return invoke(:get, relpath, params)
+        rescue => e
+          # TODO: detect timeout and retry
+          raise e
+        end
+    #  end
+    end
+
+    def delete(relpath = nil, params = nil)
+      return invoke(:delete, relpath, params)
+    end
+
+    def post(relpath = nil, params = nil, data = nil, contenttype = nil)
+      return invoke(:post, relpath, params, data, _make_headers(contenttype))
+    end
+
+    def put(relpath = nil, params = nil, data = nil, contenttype = nil)
+      return invoke(:put, relpath, params, data, _make_headers(contenttype))
+    end
+
+    def _make_headers(contenttype = nil)
+      if contenttype
+        return { 'Content-Type' => contenttype }
+      else
+        return nil
+      end
     end
   end
 end
