@@ -37,8 +37,9 @@ class CmApi
         def attr_to_json(value, preserve_ro)
           if value.respond_to? 'to_json_dict'
             return value.to_json_dict(preserve_ro)
-          elsif value.is_a? Hash && @_atype == ApiConfig
-            return config_to_api_list(value)
+# uncomment when ApiConfig defined
+#          elsif value.is_a? Hash && @_atype == ApiConfig
+#            return config_to_api_list(value)
           elsif value.is_a? DateTime
             return value.strftime(DATE_FMT)
           elsif value.is_a? Array # TODO: tuple support
@@ -47,7 +48,7 @@ class CmApi
             else
               res = []
               value.each do |x|
-                res << to_json(x, preserve_ro)
+                res << attr_to_json(x, preserve_ro)
               end
               return res
             end
@@ -58,27 +59,30 @@ class CmApi
 
         # Renamed from Cloudera's "from_json" for consistency with attr_to_json
         def attr_from_json(resource_root, data)
+          puts "ATTR.attr_from_json called with dat: #{data}"
           return nil if data.nil?
 
           if @_atype == DateTime
             return DateTime.strptime(data.to_s, DATE_FMT)
-          elsif @_atype == APIConfig
-            # return hash for summary view, ApiList for full view. Detect from JSON data
-            return {} unless data.key?('items')
-            first = data['items'][0]
-            return json_to_config(data, first.length == 2)
+# uncomment when ApiConfig defined
+#          elsif @_atype == APIConfig
+#            # return hash for summary view, ApiList for full view. Detect from JSON data
+#            return {} unless data.key?('items')
+#            first = data['items'][0]
+#            return json_to_config(data, first.length == 2)
           elsif @_is_api_list
             #return ApiList.from_json_dict(data, resource_root, @_atype)
             return ApiList.from_json_dict(self.class, data, resource_root, @_atype)
           elsif data.is_a? Array
             res = []
             data.each do |x|
-              res << from_json(resource_root, x)
+              res << attr_from_json(resource_root, x)
             end
             return res
           elsif @_atype.respond_to? 'from_json_dict'
+            puts "CALLING #{@_atype} .from_json_dict"
             #return @_atype.from_json_dict(data, resource_root)
-            return @_atype.from_json_dict(self.class, data, resource_root)
+            return @_atype.from_json_dict(data, resource_root)
           else
             return data
           end
@@ -115,6 +119,10 @@ class CmApi
           return
         elsif ret_is_list
           #return ApiList.from_json_dict(ret, self, ret_type)
+          puts "CALLING APILIST.FROM_JSON_DICT"
+          puts "  ret: #{ret}"
+          puts "  self: #{self}"
+          puts "  ret_type: #{ret_type}"
           return ApiList.from_json_dict(ret, self, ret_type)
         elsif ret.is_a? Array
           res = []
@@ -198,17 +206,19 @@ class CmApi
           initialize(resource_root, str_attrs)
         end
 
-        def initialize(resource_root, args)
+        def initialize(resource_root, args = nil)
           puts "INITIALIZE method of #{self} called"
           require 'pp'
           puts "RR:"
           pp resource_root
           puts "ARGS:"
           pp args
-     
-          args.reject! {|x, _v| [:resource_root, :self].include? x}
-          puts "FILTERED ARGS:"
-          pp args 
+    
+          if args 
+            args.reject! {|x, _v| [:resource_root, :self].include? x}
+            puts "FILTERED ARGS:"
+            pp args 
+          end
           
           @_resource_root = resource_root
 
@@ -245,6 +255,8 @@ class CmApi
             _check_attr(name.to_s, false)
           end
           self.instance_variable_set("@#{name}", val)
+          # Create the attr_accessor also
+          self.class.send(:attr_accessor, name)
         end
 
         def _check_attr(name, allow_ro)
@@ -376,8 +388,12 @@ class CmApi
         LIST_KEY = 'items'
 
         def initialize(objects, resource_root = nil, *args)
-          super(resource_root, *args)
-          __setattr__('objects', objects)
+          puts "APILIST.initialize"
+          puts "  objects: #{objects}"
+          puts "  args: #{args}"
+          super(resource_root, args)
+          puts "SUPER INITIALIZED"
+          instance_variable_set('@objects', objects)
         end
 
         def to_str
@@ -421,30 +437,37 @@ class CmApi
 
 
 #        def self.from_json_dict(dic, resource_root, member_cls = nil)
-        def self.from_json_dict(cls, dic, resource_root, member_cls = nil)
-          require 'pp'
-          pp cls
+        def self.from_json_dict(dic, resource_root, member_cls = nil)
+          puts "APILIST.from_json_dict called"
+          puts "  dic: #{dic}"
+          puts "  rr: #{resource_root}"
+          puts "  member_cls: #{member_cls}"
+          puts "  self: #{self}"
           if member_cls.nil?
-            member_cls = cls.class_variable_get(:@@_MEMBER_CLASS)
-          end
-          attr = Attr.new(member_cls)
-          items = []
-
-          if member_cls.nil?
-            member_cls = cls.class_variable_get(:@@_MEMBER_CLASS)
+            member_cls = self.class_variable_get(:@@_MEMBER_CLASS)
           end
           attr = Attr.new(member_cls)
           items = []
 
           if dic.key? LIST_KEY
             dic[LIST_KEY].each do |x|
-              items << attr.from_json(resource_root, x)
+              require 'pp'
+              puts "processing x:"
+              pp x
+              tmp = attr.attr_from_json(resource_root, x)
+              puts "RRRRRRRESULT:"
+              puts tmp
+              #items << attr.attr_from_json(resource_root, x)
+              items << tmp
             end
           end
-          ret = Object.const_get(cls).new(items)
+          #ret = Object.const_get(self).new(items)
+          puts "newing up #{self} with arg items: #{items}"
+          ret = self.new(items)
+          puts "new'd it up"
 
           # Handle if class declares custom attributes
-          if cls.class_variable_get(:@@_ATTRIBUTES)
+          if self.class_variable_get(:@@_ATTRIBUTES)
             if dic.key? LIST_KEY
               dic = dic.clone
               dic.delete(LIST_KEY)

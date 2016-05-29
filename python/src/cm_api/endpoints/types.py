@@ -76,6 +76,7 @@ class Attr(object):
        is a python list.
      - the raw value otherwise
     """
+    print "ATTR.FROM_JSON called with data: %s" % data
     if data is None:
       return None
 
@@ -92,8 +93,10 @@ class Attr(object):
     elif self._is_api_list:
       return ApiList.from_json_dict(data, resource_root, self._atype)
     elif isinstance(data, list):
+      print "data is a list: %s" % data
       return [ self.from_json(resource_root, x) for x in data ]
     elif hasattr(self._atype, 'from_json_dict'):
+      print "CALLING FROM_JSON_DICT on ATYPE"
       return self._atype.from_json_dict(data, resource_root)
     else:
       return data
@@ -408,9 +411,11 @@ class ApiList(BaseApiObject):
   LIST_KEY = "items"
 
   def __init__(self, objects, resource_root=None, **attrs):
+    print "APILIST __INIT__"
     BaseApiObject.__init__(self, resource_root, **attrs)
     # Bypass checks in BaseApiObject.__setattr__
     object.__setattr__(self, 'objects', objects)
+    print "APILIST in __INIT__, set objects: %s" % self.__str__()
 
   def __str__(self):
     return "<ApiList>(%d): [%s]" % (
@@ -437,13 +442,17 @@ class ApiList(BaseApiObject):
 
   @classmethod
   def from_json_dict(cls, dic, resource_root, member_cls=None):
+    print "APILIST.from_json_dict called"
+    print "  cls: %s" % cls
     if not member_cls:
       member_cls = cls._MEMBER_CLASS
     attr = Attr(atype=member_cls)
     items = []
     if ApiList.LIST_KEY in dic:
       items = [ attr.from_json(resource_root, x) for x in dic[ApiList.LIST_KEY] ]
+      print "-----items: %s" % items
     ret = cls(items)
+    print "-----------ret: %s" % ret
     # If the class declares custom attributes, populate them based on the input
     # dict. The check avoids extra overhead for the common case, where we just
     # have a plain list. _set_attrs() also does not understand the "items"

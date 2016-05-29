@@ -81,6 +81,12 @@ class CmApi
           puts "passing locals: #{locals}"
           super(resource_root, locals) 
         end
+
+        #def to_s()
+        #  require 'pp'
+        #  pp @@_ATTRIBUTES
+        #  return "#{@@_ATTRIBUTES['name']}, #{@@_ATTRIBUTES['version']}"
+        #end
       end 
     end
   end
