@@ -59,7 +59,6 @@ class CmApi
 
         # Renamed from Cloudera's "from_json" for consistency with attr_to_json
         def attr_from_json(resource_root, data)
-          puts "ATTR.attr_from_json called with dat: #{data}"
           return nil if data.nil?
 
           if @_atype == DateTime
@@ -80,8 +79,6 @@ class CmApi
             end
             return res
           elsif @_atype.respond_to? 'from_json_dict'
-            puts "CALLING #{@_atype} .from_json_dict"
-            #return @_atype.from_json_dict(data, resource_root)
             return @_atype.from_json_dict(data, resource_root)
           else
             return data
@@ -104,9 +101,6 @@ class CmApi
 
       def call(method, path, ret_type, ret_is_list = false, data = nil, params = nil, api_version = 1)
         # method = :post, etc
-        puts "IN CALL"
-        puts "  METHOD: #{method}"
-        puts "  RETTYPE: #{ret_type}"
         check_api_version(self, api_version)
         if !data.nil?
           data = (Attr.new(nil, true, false).attr_to_json(data, false)).to_json
@@ -118,57 +112,17 @@ class CmApi
         if ret_type.nil?
           return
         elsif ret_is_list
-          #return ApiList.from_json_dict(ret, self, ret_type)
-          puts "CALLING APILIST.FROM_JSON_DICT"
-          puts "  ret: #{ret}"
-          puts "  self: #{self}"
-          puts "  ret_type: #{ret_type}"
           return ApiList.from_json_dict(ret, self, ret_type)
         elsif ret.is_a? Array
           res = []
           ret.each do |x|
-            #res << ret_type.from_json_dict(x, self)
             res << ret_type.from_json_dict(x, self)
           end
           return res
         else
-          #return ret_type.from_json_dict(ret, self)
-          puts "CALLING FROM_JSON_DICT"
-          puts "  implict arg: #{self.class}"
-          puts "  rr: #{self}"
           return ret_type.from_json_dict(ret, self)
         end
       end
-
-## api_client, from endpoints import clusters
-# return clusters.get_cluster(self, name)
-#
-##cm_api.endpoints.clusters
-## this is the resource_root: passing my own .get method
-## resrouce_root is an instance of ApiResource
-# return call(resource_root.get, "%s/%s" % (CLUSTERS_PATH, name), ApiCluster)
-#
-## call (cm_api.endpoints.types.call?)   (INSTANCE)
-# # call method
-#def call(method, path, ret_type, ret_is_list=False, data=None, params=None, api_version=1):
-# ret = method(path, data=data, params=params)
-# # return result
-# return ret_type.from_json_dict(ret, method.im_self)
-#
-## BaseApiObject
-#  @classmethod
-#  def from_json_dict(cls, dic, resource_root):
-#    from pprint import pprint
-#    print "CLS"
-#    pprint(cls)
-#    obj = cls(resource_root)
-#    obj._set_attrs(dic, allow_ro=True)
-#    return obj
-#
-## BaseApiObject
-#def __init__(self, resource_root, **attrs):
-
-
 
       class BaseApiObject
         @@_ATTRIBUTES = {}
@@ -176,25 +130,12 @@ class CmApi
 
         attr_reader :_resource_root
 
-        #def self._get_attributes()
-        #  return self.class_variable_get(:@@_ATTRIBUTES)
-        #end
         def _get_attributes()
           return self.class.class_variable_get(:@@_ATTRIBUTES)
         end
 
-
         # TODO: I don't think this is needed... moving this logic to initialize
         def self.init(resource_root, attrs = nil)
-          puts "INIT method of class #{self} called"
-          require 'pp'
-          pp resource_root
-          puts "vvvvvv"
-          attrs.each do |k, v|
-            puts "#{k} => #{v}"
-          end
-          pp attrs
-          puts "^^^^^^"
           str_attrs = {}
           if attrs
             attrs.each do |k, v|
@@ -207,17 +148,8 @@ class CmApi
         end
 
         def initialize(resource_root, args = nil)
-          puts "INITIALIZE method of #{self} called"
-          require 'pp'
-          puts "RR:"
-          pp resource_root
-          puts "ARGS:"
-          pp args
-    
           if args 
             args.reject! {|x, _v| [:resource_root, :self].include? x}
-            puts "FILTERED ARGS:"
-            pp args 
           end
           
           @_resource_root = resource_root
@@ -451,20 +383,10 @@ class CmApi
 
           if dic.key? LIST_KEY
             dic[LIST_KEY].each do |x|
-              require 'pp'
-              puts "processing x:"
-              pp x
-              tmp = attr.attr_from_json(resource_root, x)
-              puts "RRRRRRRESULT:"
-              puts tmp
-              #items << attr.attr_from_json(resource_root, x)
-              items << tmp
+              items << attr.attr_from_json(resource_root, x)
             end
           end
-          #ret = Object.const_get(self).new(items)
-          puts "newing up #{self} with arg items: #{items}"
           ret = self.new(items)
-          puts "new'd it up"
 
           # Handle if class declares custom attributes
           if self.class_variable_get(:@@_ATTRIBUTES)

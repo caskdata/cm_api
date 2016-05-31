@@ -33,16 +33,11 @@ class CmApi
 
       CLUSTERS_PATH = '/clusters'
 
-      require 'pp'
-      pp CmApi.constants
-      pp self.constants.select {|c| self.const_get(c).is_a? Class}
-
       def get_cluster(name)
         return call(:get, "#{CLUSTERS_PATH}/#{name}", ApiCluster)
       end
 
       def get_all_clusters(view = nil)
-        puts "called: get_all_clusters"
         return call(:get, CLUSTERS_PATH, ApiCluster, true, nil, view && { 'view' => view } || nil)
       end
 
@@ -82,11 +77,9 @@ class CmApi
           super(resource_root, locals) 
         end
 
-        #def to_s()
-        #  require 'pp'
-        #  pp @@_ATTRIBUTES
-        #  return "#{@@_ATTRIBUTES['name']}, #{@@_ATTRIBUTES['version']}"
-        #end
+        def to_s()
+          return "<ApiCluster>: #{@name}; version: #{@version}"
+        end
       end 
     end
   end
