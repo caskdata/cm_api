@@ -57,27 +57,6 @@ class CmApi
       client.headers = { :'content-type' => 'application/json' }
       super(client)
     end
-
-    # Cluster ops
-
-    def get_cloudera_manager
-    end
-
-    def create_cluster(name, version = nil, fullVersion = nil)
-    end
-
-    def delete_cluster(name)
-    end
-
-#    def get_all_clusters_api(view = nil)
-#      puts "called api_client.get_all_clusters"
-#      ::CmApi::Endpoints::Clusters.get_all_clusters(view)
-#    end
-
-#    def get_cluster_api(name)
-#      puts "called api_client.get_cluster"
-#      ::CmApi::Endpoints::Clusters.get_cluster(name)
-#    end
   end
 
   def self.get_root_resource(server_host, server_port = nil, username = 'admin', password = 'admin', use_tls = false, version = API_CURRENT_VERSION)

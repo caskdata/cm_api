@@ -33,12 +33,32 @@ class CmApi
 
       CLUSTERS_PATH = '/clusters'
 
+      def create_cluster(name, version = nil, fullVersion = nil)
+        if version.nil? && fullVersion.nil?
+          raise "Either 'version' or 'fullVersion' must be specified"
+        end
+        if !fullVersion.nil?
+          api_version = 6
+          version = nil
+        else
+          api_version = 1
+        end
+
+        puts "Creating cluster"
+        apicluster = ApiCluster.new(self, name, version, fullVersion)
+        return call(:post, CLUSTERS_PATH, ApiCluster, true, [apicluster], nil, api_version)[0]
+      end
+
       def get_cluster(name)
         return call(:get, "#{CLUSTERS_PATH}/#{name}", ApiCluster)
       end
 
       def get_all_clusters(view = nil)
         return call(:get, CLUSTERS_PATH, ApiCluster, true, nil, view && { 'view' => view } || nil)
+      end
+
+      def delete_cluster(name)
+        return call(:delete, "#{CLUSTERS_PATH}/#{name}", ApiCluster)
       end
 
       class ApiCluster < ::CmApi::Endpoints::Types::BaseApiResource
@@ -54,27 +74,9 @@ class CmApi
         }
 
         def initialize(resource_root, name = nil, version = nil, fullVersion = nil)
-        #def initialize(resource_root, *args)
-          #puts "INITIALIZING APICLUSTER OBJECT"
-          #require 'pp'
-          #puts "METHODS"
-          #pp self.methods
-          #puts "CLASS METHODS"
-          #pp self.class.methods
-          #puts "CLASS VARIABLES:"
-          #pp self.class.class_variables
-          
-          #self.class.init(resource_root, local_variables)
-
-          # ruby equivalent of python local()
-          local_names = binding.send(:local_variables)
-          local_names -= [:local_names, :locals]
-          locals = local_names.reduce({}) do |acc, v|
-            acc[v] = binding.eval(v.to_s) unless v == :_
-            acc
-          end
-          puts "passing locals: #{locals}"
-          super(resource_root, locals) 
+          # possible alternative to generate the hash argument dynamically, similar to python locals():
+          #  method(__method__).parameters.map { |arg| arg[1] }.inject({}) { |h, a| h[a] = eval a.to_s; h}
+          super(resource_root, {:name => name, :version => version, :fullVersion => fullVersion})
         end
 
         def to_s()

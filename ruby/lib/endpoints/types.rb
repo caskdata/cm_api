@@ -103,7 +103,7 @@ class CmApi
         # method = :post, etc
         check_api_version(self, api_version)
         if !data.nil?
-          data = (Attr.new(nil, true, false).attr_to_json(data, false)).to_json
+          data = (Attr.new(nil, true, true).attr_to_json(data, false)).to_json
           ret = self.send(method, path, params, data)
         else
           ret = self.send method, path, params
@@ -220,12 +220,12 @@ class CmApi
         def to_json_dict(preserve_ro = false)
           dic = {}
           self._get_attributes().each do |name, attr|
-            next if !preserve_ro && attr && !attr.rw
+            next if !preserve_ro && attr && attr.respond_to?('rw') && !attr.rw
             begin
               value = self.instance_variable_get("@#{name}")
               unless value.nil?
                 if attr
-                  dic[name] = attr.to_json(value, preserve_ro)
+                  dic[name] = attr.attr_to_json(value, preserve_ro)
                 else
                   dic[name] = value
                 end
@@ -337,7 +337,7 @@ class CmApi
           attr = Attr.new
           res = []
           @objects.each do |x|
-            res << attr.to_json(x, preserve_ro)
+            res << attr.attr_to_json(x, preserve_ro)
           end
           ret[LIST_KEY] = res
           return ret
