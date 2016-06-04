@@ -76,7 +76,6 @@ class Attr(object):
        is a python list.
      - the raw value otherwise
     """
-    print "ATTR.FROM_JSON called with data: %s" % data
     if data is None:
       return None
 
@@ -93,10 +92,8 @@ class Attr(object):
     elif self._is_api_list:
       return ApiList.from_json_dict(data, resource_root, self._atype)
     elif isinstance(data, list):
-      print "data is a list: %s" % data
       return [ self.from_json(resource_root, x) for x in data ]
     elif hasattr(self._atype, 'from_json_dict'):
-      print "CALLING FROM_JSON_DICT on ATYPE"
       return self._atype.from_json_dict(data, resource_root)
     else:
       return data
@@ -134,9 +131,6 @@ def call(method, path, ret_type,
   @param params: Optional query parameters for the call.
   @param api_version: minimum API version for the call.
   """
-  print "IN CALL, METHOD: %s" % method
-  print "IM_SELF: %s" % method.im_self
-  print "RET_TYP: %s" % ret_type
   check_api_version(method.im_self, api_version)
   if data is not None:
     data = json.dumps(Attr(is_api_list=True).to_json(data, False))
@@ -150,8 +144,6 @@ def call(method, path, ret_type,
   elif isinstance(ret, list):
     return [ ret_type.from_json_dict(x, method.im_self) for x in ret ]
   else:
-    print "CALLING FROM_JSON_DICT"
-    print "  IM_SELF: %s" % method.im_self
     return ret_type.from_json_dict(ret, method.im_self)
 
 class BaseApiObject(object):
@@ -195,15 +187,12 @@ class BaseApiObject(object):
 
      - BaseApiObject.init(self, locals())
     """
-    print "INIT called"
-    print "  attrs: %s" % attrs
     # This works around http://bugs.python.org/issue2646
     # We use unicode strings as keys in kwargs.
     str_attrs = { }
     if attrs:
       for k, v in attrs.iteritems():
         if k not in ('self', 'resource_root'):
-          print "    assigning str_attrs %s => %s" % (k, v)
           str_attrs[k] = v
     BaseApiObject.__init__(obj, resource_root, **str_attrs)
 
@@ -217,15 +206,11 @@ class BaseApiObject(object):
     @param attrs: optional dictionary of attributes to set. This should only
                   contain r/w attributes.
     """
-    print "__INIT__ called"
-    print "  attrs: %s" % attrs
     self._resource_root = resource_root
 
     for name, attr in self._get_attributes().iteritems():
-      print "  calling object.__setattr__ to set %s => None, ignoring %s" % ( name, attr )
       object.__setattr__(self, name, None)
     if attrs:
-      print "  calling self._set_attrs to set %s" % attrs
       self._set_attrs(attrs, from_json=False)
 
   def _set_attrs(self, attrs, allow_ro=False, from_json=True):
@@ -235,18 +220,12 @@ class BaseApiObject(object):
     JSON deserialization of values.
     """
     for k, v in attrs.iteritems():
-      print "processing k,v: %s, %s" % (k, v)
       attr = self._check_attr(k, allow_ro)
       if attr and from_json:
-        print "checking for v"
         v = attr.from_json(self._get_resource_root(), v)
-        print "determined v: %s" % v
-      print "    calling object.__setattr__ to set %s => %s" % (k, v)
       object.__setattr__(self, k, v)
 
   def __setattr__(self, name, val):
-    print "__setattr__ CALLED on  with %s = %s" % ( name, val)
-    #print self
     if name not in BaseApiObject._WHITELIST:
       self._check_attr(name, False)
     object.__setattr__(self, name, val)
@@ -259,7 +238,6 @@ class BaseApiObject(object):
     if not allow_ro and attr and not attr.rw:
       raise AttributeError('Attribute %s of class %s is read only.' %
           (name, self.__class__.__name__))
-    print "_check_attr returning %s" % attr
     return attr
 
   def _get_resource_root(self):
@@ -306,12 +284,7 @@ class BaseApiObject(object):
 
   @classmethod
   def from_json_dict(cls, dic, resource_root):
-    from pprint import pprint
-    print "FROM_JSON_DICT CLS: %s" % cls
-    pprint(cls)
-    print "FJD: %s" % resource_root
     obj = cls(resource_root)
-    print "BACK IN FJD, calling obj %s._set_attrs with %s" % (obj, dic)
     obj._set_attrs(dic, allow_ro=True)
     return obj
 
@@ -411,11 +384,9 @@ class ApiList(BaseApiObject):
   LIST_KEY = "items"
 
   def __init__(self, objects, resource_root=None, **attrs):
-    print "APILIST __INIT__"
     BaseApiObject.__init__(self, resource_root, **attrs)
     # Bypass checks in BaseApiObject.__setattr__
     object.__setattr__(self, 'objects', objects)
-    print "APILIST in __INIT__, set objects: %s" % self.__str__()
 
   def __str__(self):
     return "<ApiList>(%d): [%s]" % (
@@ -442,17 +413,13 @@ class ApiList(BaseApiObject):
 
   @classmethod
   def from_json_dict(cls, dic, resource_root, member_cls=None):
-    print "APILIST.from_json_dict called"
-    print "  cls: %s" % cls
     if not member_cls:
       member_cls = cls._MEMBER_CLASS
     attr = Attr(atype=member_cls)
     items = []
     if ApiList.LIST_KEY in dic:
       items = [ attr.from_json(resource_root, x) for x in dic[ApiList.LIST_KEY] ]
-      print "-----items: %s" % items
     ret = cls(items)
-    print "-----------ret: %s" % ret
     # If the class declares custom attributes, populate them based on the input
     # dict. The check avoids extra overhead for the common case, where we just
     # have a plain list. _set_attrs() also does not understand the "items"
