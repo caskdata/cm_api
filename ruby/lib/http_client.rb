@@ -19,7 +19,7 @@
 require 'rest-client'
 require 'uri'
 
-class CmApi
+module CmApi
   class RestException < RuntimeError
     attr_reader :code, :message
 

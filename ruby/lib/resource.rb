@@ -19,7 +19,7 @@
 require 'rest-client'
 require 'json'
 
-class CmApi
+module CmApi
   class Resource
     def initialize(client, relpath = '')
       @client = client

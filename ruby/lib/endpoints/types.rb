@@ -19,8 +19,8 @@
 require 'json'
 require 'date'
 
-class CmApi
-  class Endpoints
+module CmApi
+  module Endpoints
     module Types
 
       class Attr

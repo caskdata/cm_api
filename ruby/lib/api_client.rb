@@ -23,7 +23,7 @@ require_relative 'endpoints/types.rb'
 require_relative 'endpoints/clusters.rb'
 
 
-class CmApi
+module CmApi
   #include ::CmApi::Endpoints::Clusters
 
   API_AUTH_REALM = 'Cloudera Manager'

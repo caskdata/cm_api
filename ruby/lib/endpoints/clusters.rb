@@ -18,8 +18,8 @@
 
 require_relative 'types'
 
-class CmApi
-  class Endpoints
+module CmApi
+  module Endpoints
     module Clusters
 
       ## include types
@@ -81,6 +81,15 @@ class CmApi
 
         def to_s()
           return "<ApiCluster>: #{@name}; version: #{@version}"
+        end
+
+        def _path()
+          return "#{CLUSTERS_PATH}/#{@name}"
+        end
+
+        def _put_cluster(dic, params = nil)
+          cluster = _put('', ApiCluster, false, dic, params)
+          _update(cluster)
         end
       end 
     end
