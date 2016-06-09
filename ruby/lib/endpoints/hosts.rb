@@ -30,7 +30,7 @@ module CmApi
 
       def create_host(host_id, name, ipaddr, rack_id = nil)
         apihost = ApiHost.new(self, host_id, name, ipaddr, rack_id)
-        return call(:get, HOSTS_PATH, ApiHost, true, [apihost])[0] 
+        return call(:post, HOSTS_PATH, ApiHost, true, [apihost])[0]
       end
 
       def get_host(host_id)
