@@ -63,7 +63,7 @@ module CmApi
 
       class ApiCluster < ::CmApi::Endpoints::Types::BaseApiResource
       #class ApiCluster < BaseApiResource
-        @@_ATTRIBUTES = {
+        @_ATTRIBUTES = {
           'name' => nil,
           'displayName' => nil,
           'clusterUrl' => nil,

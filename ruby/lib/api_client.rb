@@ -21,6 +21,7 @@ require_relative 'http_client'
 require_relative 'resource'
 require_relative 'endpoints/types.rb'
 require_relative 'endpoints/clusters.rb'
+require_relative 'endpoints/hosts.rb'
 
 
 module CmApi
@@ -43,6 +44,8 @@ module CmApi
 
   class ApiResource < Resource
     include ::CmApi::Endpoints::Clusters
+    include ::CmApi::Endpoints::Hosts
+
     attr_accessor :version
     def initialize(server_host, server_port = nil, username = 'admin', password = 'admin', use_tls = false, version = API_CURRENT_VERSION)
       @version = version

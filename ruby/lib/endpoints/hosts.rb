@@ -46,7 +46,7 @@ module CmApi
       end
 
       class ApiHost < ::CmApi::Endpoints::Types::BaseApiResource
-        @@_ATTRIBUTES = {
+        @_ATTRIBUTES = {
           'hostId' => nil,
           'hostname' => nil,
           'ipAddress' => nil,

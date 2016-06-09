@@ -125,13 +125,15 @@ module CmApi
       end
 
       class BaseApiObject
-        @@_ATTRIBUTES = {}
+        # @_ATTRIBUTES is not inherited by subclasses, but rather initialized in the constructor below
+        @_ATTRIBUTES = {}
+        # @@_WHITELIST is a global, shared among all subclasses. It should not be modified.
         @@_WHITELIST = [ '_resource_root', '_attributes' ]
 
         attr_reader :_resource_root
 
         def _get_attributes()
-          return self.class.class_variable_get(:@@_ATTRIBUTES)
+          return self.class.instance_variable_get(:@_ATTRIBUTES)
         end
 
         # TODO: I don't think this is needed... moving this logic to initialize
@@ -153,6 +155,9 @@ module CmApi
           end
           
           @_resource_root = resource_root
+
+          # Initialize @_ATTRIBUTES if subclass has not defined it
+          self.class.instance_variable_set(:@_ATTRIBUTES, {}) unless self.class.instance_variable_get(:@_ATTRIBUTES)
 
           self._get_attributes().each do |name, attr|
             #self.instance_variable_set("@#{name}", nil)
@@ -183,7 +188,7 @@ module CmApi
 
       # TODO: make sure this works
         def __setattr__(name, val)
-          unless @@_WHITELIST.include? name
+          unless self.class.class_variable_get(:@@_WHITELIST).include? name
             _check_attr(name.to_s, false)
           end
           self.instance_variable_set("@#{name}", val)
@@ -376,7 +381,7 @@ module CmApi
           puts "  member_cls: #{member_cls}"
           puts "  self: #{self}"
           if member_cls.nil?
-            member_cls = self.class_variable_get(:@@_MEMBER_CLASS)
+            member_cls = self.instance_variable_get(:@_MEMBER_CLASS)
           end
           attr = Attr.new(member_cls)
           items = []
@@ -389,7 +394,7 @@ module CmApi
           ret = self.new(items)
 
           # Handle if class declares custom attributes
-          if self.class_variable_get(:@@_ATTRIBUTES)
+          if self.instance_variable_get(:@_ATTRIBUTES)
             if dic.key? LIST_KEY
               dic = dic.clone
               dic.delete(LIST_KEY)
@@ -401,7 +406,7 @@ module CmApi
       end
 
       class ApiHostRef < BaseApiObject
-        @@_ATTRIBUTES = {
+        @_ATTRIBUTES = {
           'hostId' => nil
         }
 
@@ -417,7 +422,7 @@ module CmApi
       end
 
       class ApiServiceRef < BaseApiObject
-        @@_ATTRIBUTES = {
+        @_ATTRIBUTES = {
           'clusterName' => nil,
           'serviceName' => nil,
           'peerName' => nil
@@ -429,7 +434,7 @@ module CmApi
       end
 
       class ApiClusterRef < BaseApiObject
-        @@_ATTRIBUTES = {
+        @_ATTRIBUTES = {
           'clusterName' => nil
         }
 
@@ -439,7 +444,7 @@ module CmApi
       end
 
       class ApiRoleRef < BaseApiObject
-        @@_ATTRIBUTES = {
+        @_ATTRIBUTES = {
           'clusterName' => nil,
           'serviceName' => nil,
           'roleName' => nil
@@ -451,7 +456,7 @@ module CmApi
       end
 
       class ApiRoleConfigGroupRef < BaseApiObject
-        @@_ATTRIBUTES = {
+        @_ATTRIBUTES = {
           'roleConfigGroupName' => nil
         }
 
