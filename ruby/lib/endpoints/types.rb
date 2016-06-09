@@ -406,13 +406,60 @@ module CmApi
         }
 
         def initialize(resource_root, hostId = nil)
-          init(resource_root, local_variables)
+          # possible alternative to generate the hash argument dynamically, similar to python locals():
+          #  method(__method__).parameters.map { |arg| arg[1] }.inject({}) { |h, a| h[a] = eval a.to_s; h}
+          super(resource_root, {:hostId => hostId})
         end
 
         def to_str
           return "<ApiHostRef>: #{hostId}"
         end
       end
+
+      class ApiServiceRef < BaseApiObject
+        @@_ATTRIBUTES = {
+          'clusterName' => nil,
+          'serviceName' => nil,
+          'peerName' => nil
+        }
+
+        def initialize(resource_root, serviceName = nil, clusterName = nil, peerName = nil)
+          super(resource_root, {:serviceName => serviceName, :clusterName => clusterName, :peerName => peerName})
+        end
+      end
+
+      class ApiClusterRef < BaseApiObject
+        @@_ATTRIBUTES = {
+          'clusterName' => nil
+        }
+
+        def initialize(resource_root, clusterName = nil)
+          super(resource_root, {:clusterName => clusterName})
+        end
+      end
+
+      class ApiRoleRef < BaseApiObject
+        @@_ATTRIBUTES = {
+          'clusterName' => nil,
+          'serviceName' => nil,
+          'roleName' => nil
+        }
+
+        def initialize(resource_root, serviceName = nil, roleName = nil, clusterName = nil)
+          super(resource_root, {:serviceName => serviceName, :roleName => roleName, :clusterName => clusterName})
+        end
+      end
+
+      class ApiRoleConfigGroupRef < BaseApiObject
+        @@_ATTRIBUTES = {
+          'roleConfigGroupName' => nil
+        }
+
+        def initialize(resource_root, roleConfigGroupName = nil)
+          super(resource_root, {:roleConfigGroupName => roleConfigGroupName})
+        end
+      end
+
     end
   end
 end
