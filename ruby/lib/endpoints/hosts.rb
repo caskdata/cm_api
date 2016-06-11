@@ -34,7 +34,7 @@ module CmApi
       end
 
       def get_host(resource_root, host_id)
-        return call(resource_root.method(:get), "#{HOST_PATH}/#{host_id}", ApiHost)
+        return call(resource_root.method(:get), "#{HOSTS_PATH}/#{host_id}", ApiHost)
       end
 
       def get_all_hosts(resource_root, view = nil)

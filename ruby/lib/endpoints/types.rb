@@ -35,14 +35,15 @@ module CmApi
 
         # Renamed from Cloudera's "to_json" to not conflict with json gem
         def attr_to_json(value, preserve_ro)
+          puts "VALUE: #{value.inspect}"
           if value.respond_to? 'to_json_dict'
             return value.to_json_dict(preserve_ro)
 # uncomment when ApiConfig defined
-#          elsif value.is_a? Hash && @_atype == ApiConfig
-#            return config_to_api_list(value)
-          elsif value.is_a? DateTime
+          elsif value.is_a?(Hash) && @_atype == ApiConfig
+            return config_to_api_list(value)
+          elsif value.is_a?(DateTime)
             return value.strftime(DATE_FMT)
-          elsif value.is_a? Array # TODO: tuple support
+          elsif value.is_a?(Array) # TODO: tuple support
             if @_is_api_list
               return ApiList.new(value).to_json_dict()
             else
@@ -64,15 +65,15 @@ module CmApi
           if @_atype == DateTime
             return DateTime.strptime(data.to_s, DATE_FMT)
 # uncomment when ApiConfig defined
-#          elsif @_atype == APIConfig
-#            # return hash for summary view, ApiList for full view. Detect from JSON data
-#            return {} unless data.key?('items')
-#            first = data['items'][0]
-#            return json_to_config(data, first.length == 2)
+          elsif @_atype == ApiConfig
+            # return hash for summary view, ApiList for full view. Detect from JSON data
+            return {} unless data.key?('items')
+            first = data['items'][0]
+            return json_to_config(data, first.length == 2)
           elsif @_is_api_list
             #return ApiList.from_json_dict(data, resource_root, @_atype)
             return ApiList.from_json_dict(self.class, data, resource_root, @_atype)
-          elsif data.is_a? Array
+          elsif data.is_a?(Array)
             res = []
             data.each do |x|
               res << attr_from_json(resource_root, x)
@@ -118,7 +119,7 @@ module CmApi
           return
         elsif ret_is_list
           return ApiList.from_json_dict(ret, method.receiver, ret_type)
-        elsif ret.is_a? Array
+        elsif ret.is_a?(Array)
           res = []
           ret.each do |x|
             res << ret_type.from_json_dict(x, method.receiver)
@@ -215,7 +216,7 @@ module CmApi
         end
 
         def _update(api_obj)
-          unless api_obj.is_a? self.class
+          unless api_obj.is_a?(self.class)
             raise "Class #{self.class} does not derive from #{api_obj.class}; cannot update attributes."
           end
 
@@ -281,7 +282,7 @@ module CmApi
 
         def _require_min_api_version(version)
           actual_version = @_resource_root.version
-          version = max(version, _api_version)
+          version = [version, _api_version].max
           if actual_version < version
             raise "API version #{version} is required but #{actual_version} is in use."
           end
@@ -430,7 +431,7 @@ module CmApi
         end
 
         def to_str
-          return "<ApiHostRef>: #{hostId}"
+          return "<ApiHostRef>: #{@hostId}"
         end
       end
 
@@ -476,6 +477,57 @@ module CmApi
         def initialize(resource_root, roleConfigGroupName = nil)
           super(resource_root, {:roleConfigGroupName => roleConfigGroupName})
         end
+      end
+
+      #
+      # Configuration helpers.
+      #
+
+      class ApiConfig < BaseApiObject
+        @_ATTRIBUTES = {
+          'name' => nil,
+          'value' => nil,
+          'required' => ::CmApi::Endpoints::Types::ROAttr.new,
+          'default' => ::CmApi::Endpoints::Types::ROAttr.new,
+          'displayName' => ::CmApi::Endpoints::Types::ROAttr.new,
+          'description' => ::CmApi::Endpoints::Types::ROAttr.new,
+          'relatedName' => ::CmApi::Endpoints::Types::ROAttr.new,
+          'validationState' => ::CmApi::Endpoints::Types::ROAttr.new,
+          'validationMessage' => ::CmApi::Endpoints::Types::ROAttr.new
+        }
+
+        def initialize(resource_root, name = nil, value = nil)
+          super(resource_root, {:name => name, :value => value})
+        end
+
+        def to_str
+          return "<ApiConfig>: #{@name} = #{@value}"
+        end
+      end
+
+      def config_to_api_list(dic)
+        config = []
+        dic.each do |k, v|
+          config << {'name' => k, 'value' => v}
+        end
+        return { ApiList.LIST_KEY => config }
+      end
+
+      def config_to_json(dic)
+        return config_to_api_list.to_json
+      end
+
+      def json_to_config(dic, full = false)
+        config = {}
+        dic['items'].each do |entry|
+          k = entry['name']
+          if full
+            config[k] = ApiConfig.from_json_dict(entry, nil)
+          else
+            config[k] = entry['value']
+          end
+        end
+        return config
       end
 
     end
