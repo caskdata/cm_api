@@ -28,21 +28,21 @@ module CmApi
 
       HOSTS_PATH = '/hosts'
 
-      def create_host(host_id, name, ipaddr, rack_id = nil)
-        apihost = ApiHost.new(self, host_id, name, ipaddr, rack_id)
-        return call(:post, HOSTS_PATH, ApiHost, true, [apihost])[0]
+      def create_host(resource_root, host_id, name, ipaddr, rack_id = nil)
+        apihost = ApiHost.new(resource_root, host_id, name, ipaddr, rack_id)
+        return call(resource_root.method(:post), HOSTS_PATH, ApiHost, true, [apihost])[0]
       end
 
-      def get_host(host_id)
-        return call(:get, "#{HOST_PATH}/#{host_id}", ApiHost)
+      def get_host(resource_root, host_id)
+        return call(resource_root.method(:get), "#{HOST_PATH}/#{host_id}", ApiHost)
       end
 
-      def get_all_hosts(view = nil)
-        return call(:get, HOSTS_PATH, ApiHost, true, nil, view && { 'view' => view } || nil)
+      def get_all_hosts(resource_root, view = nil)
+        return call(resource_root.method(:get), HOSTS_PATH, ApiHost, true, nil, view && { 'view' => view } || nil)
       end
 
-      def delete_host(host_id)
-        return call(:delete, "#{HOSTS_PATH}/#{host_id}", ApiHost)
+      def delete_host(resource_root, host_id)
+        return call(resource_root.method(:delete), "#{HOSTS_PATH}/#{host_id}", ApiHost)
       end
 
       class ApiHost < ::CmApi::Endpoints::Types::BaseApiResource
@@ -78,6 +78,7 @@ module CmApi
         end
 
         def _put_host()
+          puts "[#{self.class}] [#{self.inspect}] [#{__method__}] - calling _put"
           return _put('', ApiHost, false, self)
         end
 
@@ -88,9 +89,6 @@ module CmApi
         def update_config(config)
           return _update_config('config', config)
         end
-
-
-
 
         def set_rack_id(rackId)
           @rackId = rackId

@@ -33,7 +33,7 @@ module CmApi
 
       CLUSTERS_PATH = '/clusters'
 
-      def create_cluster(name, version = nil, fullVersion = nil)
+      def create_cluster(resource_root, name, version = nil, fullVersion = nil)
         if version.nil? && fullVersion.nil?
           raise "Either 'version' or 'fullVersion' must be specified"
         end
@@ -44,21 +44,23 @@ module CmApi
           api_version = 1
         end
 
-        puts "Creating cluster"
-        apicluster = ApiCluster.new(self, name, version, fullVersion)
-        return call(:post, CLUSTERS_PATH, ApiCluster, true, [apicluster], nil, api_version)[0]
+        puts "[#{self.class}] Create cluster start: name: #{name}, version: #{version}"
+        puts "[#{self.class}] Create cluster instantiating ApiCluster obj"
+        apicluster = ApiCluster.new(resource_root, name, version, fullVersion)
+        puts "[#{self.class}] invoking call()"
+        return call(resource_root.method(:post), CLUSTERS_PATH, ApiCluster, true, [apicluster], nil, api_version)[0]
       end
 
-      def get_cluster(name)
-        return call(:get, "#{CLUSTERS_PATH}/#{name}", ApiCluster)
+      def get_cluster(resource_root, name)
+        return call(resource_root.method(:get), "#{CLUSTERS_PATH}/#{name}", ApiCluster)
       end
 
-      def get_all_clusters(view = nil)
-        return call(:get, CLUSTERS_PATH, ApiCluster, true, nil, view && { 'view' => view } || nil)
+      def get_all_clusters(resource_root, view = nil)
+        return call(resource_root.method(:get), CLUSTERS_PATH, ApiCluster, true, nil, view && { 'view' => view } || nil)
       end
 
-      def delete_cluster(name)
-        return call(:delete, "#{CLUSTERS_PATH}/#{name}", ApiCluster)
+      def delete_cluster(resource_root, name)
+        return call(resource_root.method(:delete), "#{CLUSTERS_PATH}/#{name}", ApiCluster)
       end
 
       class ApiCluster < ::CmApi::Endpoints::Types::BaseApiResource
@@ -74,9 +76,11 @@ module CmApi
         }
 
         def initialize(resource_root, name = nil, version = nil, fullVersion = nil)
+          puts "[#{self.class}] Initialize ApiCluster with resource root: #{resource_root}"
           # possible alternative to generate the hash argument dynamically, similar to python locals():
           #  method(__method__).parameters.map { |arg| arg[1] }.inject({}) { |h, a| h[a] = eval a.to_s; h}
           super(resource_root, {:name => name, :version => version, :fullVersion => fullVersion})
+          puts "[#{self.class}] Initialized ApiCluster #{to_s}"
         end
 
         def to_s()

@@ -43,7 +43,9 @@ module CmApi
     def invoke(method, relpath = nil, params = nil, data = nil, headers = nil)
       # Invoke an API method
       path = _join_uri(relpath)
+      puts "[#{self.class}] Invoking #{path}, params: #{params}, data: #{data}"
       resp = @client.execute(method, path, params, data, headers)
+      puts "[#{self.class}] Returning response: #{resp}"
 
       begin
         body = resp.body
