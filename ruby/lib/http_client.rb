@@ -77,7 +77,6 @@ module CmApi
       rest_client_args[:user] = @user
       rest_client_args[:password] = @password
       rest_client_args[:headers] = _get_headers(headers)
-#      rest_client_args[:headers][:params] = params
 
       require 'pp'
       pp rest_client_args
@@ -93,20 +92,14 @@ module CmApi
     end
 
     def _make_url(path, params)
-      puts "_MAKE_URL: path: #{path}, params: #{params}"
       res = @base_url
-      puts "RESULT AFTER BASE: #{res}"
       if path
         res = ::File.join(res, path.chomp('/')).to_s
       end
-      puts "RESULT AFTER PATH: #{res}"
       if params
         param_str = ::URI.encode_www_form(params)
-        puts "PARAM_STR: #{param_str}"
         res += '?' + param_str
-        puts "RES AFTER PARAMS: #{res}"
       end
-      puts "FINAL RES: #{res}"
       res
     end
   end
