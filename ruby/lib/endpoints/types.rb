@@ -205,6 +205,8 @@ module CmApi
         end
 
         def _check_attr(name, allow_ro)
+          #require 'pp'
+          #pp self._get_attributes()
           unless self._get_attributes().key? name
             raise "Invalid property #{name} for class #{self.class.name}"
           end
@@ -270,7 +272,6 @@ module CmApi
 
 
       class BaseApiResource < BaseApiObject
-        include ::CmApi::Endpoints::Types
 
         def _api_version
           return 1
@@ -478,6 +479,92 @@ module CmApi
           super(resource_root, {:roleConfigGroupName => roleConfigGroupName})
         end
       end
+
+      class ApiCommand < BaseApiObject
+        SYNCHRONOUS_COMMAND_ID = -1
+
+        def _get_attributes()
+          unless self.class.instance_variable_get(:@_ATTRIBUTES) &&
+                   !self.class.instance_variable_get(:@_ATTRIBUTES).empty?
+            _attributes = {
+              'id'            => ::CmApi::Endpoints::Types::ROAttr.new,
+              'name'          => ::CmApi::Endpoints::Types::ROAttr.new,
+              'startTime'     => ::CmApi::Endpoints::Types::ROAttr.new(DateTime),
+              'endTime'       => ::CmApi::Endpoints::Types::ROAttr.new(DateTime),
+              'active'        => ::CmApi::Endpoints::Types::ROAttr.new,
+              'success'       => ::CmApi::Endpoints::Types::ROAttr.new,
+              'resultMessage' => ::CmApi::Endpoints::Types::ROAttr.new,
+              'clusterRef'    => ::CmApi::Endpoints::Types::ROAttr.new(ApiClusterRef),
+              'serviceRef'    => ::CmApi::Endpoints::Types::ROAttr.new(ApiServiceRef),
+              'roleRef'       => ::CmApi::Endpoints::Types::ROAttr.new(ApiRoleRef),
+              'hostRef'       => ::CmApi::Endpoints::Types::ROAttr.new(ApiHostRef),
+              'children'      => ::CmApi::Endpoints::Types::ROAttr.new(ApiCommand, false),
+              'parent'        => ::CmApi::Endpoints::Types::ROAttr.new(ApiCommand),
+              'resultDataUrl' => ::CmApi::Endpoints::Types::ROAttr.new
+            }
+            self.class.instance_variable_set(:@_ATTRIBUTES, _attributes)
+          end
+          self.class.instance_variable_get(:@_ATTRIBUTES)
+        end
+
+        def to_str
+          return "<ApiCommand>: '#{@name}' (id: #{@id}; active: #{@active}; success: #{@success}"
+        end
+
+        def _path
+          return "/commands/#{@id}"
+        end
+
+        def fetch
+          if @id == ApiCommand::SYNCHRONOUS_COMMAND_ID
+            return self
+          end
+
+          resp = @_resource_root.get(_path())
+          return ApiCommand.from_json_dict(resp, @_resource_root)
+        end
+
+        def wait(timeout = nil)
+          if @id == ApiCommand::SYNCHRONOUS_COMMAND_ID
+            return self
+          end
+
+          sleep_sec = 5
+
+          if timeout.nil?
+            deadline = nil
+          else
+            deadline = Time.now() + timeout
+          end
+
+          loop {
+            cmd = fetch()
+            return cmd unless cmd.active
+
+            if !deadline.nil?
+              now = Time.now()
+              if deadline < now
+                return cmd
+              else
+                sleep([sleep_sec, deadline - now].min)
+              end
+            else
+              sleep(sleep_sec)
+            end
+          }
+        end
+
+        def abort
+          if @id == ApiCommand.SYNCHRONOUS_COMMAND_ID
+            return self
+          end
+
+          path = _path() + '/abort'
+          resp = @_resource_root.post(path)
+          return ApiCommand.from_json_dict(resp, @_resource_root)
+        end
+      end
+
 
       #
       # Configuration helpers.
