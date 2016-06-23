@@ -19,6 +19,29 @@
 require 'json'
 require 'date'
 
+# Custom attr_accessor to run _check_attr before setting any attribute
+# This replaces the __setattr__ override in the Python version
+class Class
+  def attr_writer_with_validation(*args)
+    args.each do |arg|
+      arg = arg.to_s
+
+      # Custom setter to call _check_attr function before setting
+      self.class_eval %Q{
+        def #{arg}=(val)
+          unless self.class.class_variable_get(:@@_WHITELIST).include? val
+            _check_attr("#{arg}", false)
+          end
+
+          # set the value itself
+          @#{arg}=val
+        end
+      }
+    end
+  end
+end
+
+
 module CmApi
   module Endpoints
     module Types
@@ -35,7 +58,6 @@ module CmApi
 
         # Renamed from Cloudera's "to_json" to not conflict with json gem
         def attr_to_json(value, preserve_ro)
-          puts "VALUE: #{value.inspect}"
           if value.respond_to? 'to_json_dict'
             return value.to_json_dict(preserve_ro)
 # uncomment when ApiConfig defined
@@ -90,7 +112,7 @@ module CmApi
 
       class ROAttr < Attr
         def initialize(atype = nil, is_api_list = false)
-          Attr.new(atype, false, is_api_list)
+          super(atype, false, is_api_list)
         end
       end
 
@@ -156,7 +178,7 @@ module CmApi
         end
 
         def initialize(resource_root, args = nil)
-          puts "[#{self.class}] Initializing BaseApiObject"
+          puts "[#{self.class}] Initializing BaseApiObject with args: #{args}"
           if args 
             args.reject! {|x, _v| [:resource_root, :self].include? x}
           end
@@ -168,40 +190,28 @@ module CmApi
           self.class.instance_variable_set(:@_ATTRIBUTES, {}) unless self.class.instance_variable_get(:@_ATTRIBUTES)
 
           self._get_attributes().each do |name, attr|
-            #self.instance_variable_set("@#{name}", nil)
-            #puts "calling __setattr__ to set #{name} => nil, ignoring #{attr}"
-            __setattr__(name, nil)
+            self.instance_variable_set("@#{name}", nil)
+            # Create the attr_accessors
+            self.class.send(:attr_reader, name)
+            self.class.send(:attr_writer_with_validation, name)
           end
           if args
-            #puts "inialize now calling _set_attrs with args: #{args}"
             _set_attrs(args, false, false)
           end
         end
 
       # TODO: functions should be converted to hash arguments, as they are often called using named parameters in python
         def _set_attrs(attrs, allow_ro = false, from_json = true)
-          #puts "_SET_ATTRS CALLED with attrs: #{attrs}"
           attrs.each do |k, v|
             #puts "processing k,v: #{k} => #{v}"
             attr = _check_attr(k.to_s, allow_ro)
             if attr && from_json
               #puts "checking for v"
-              v = attr.from_json(@_resource_root, v)
+              v = attr.attr_from_json(@_resource_root, v)
               #puts "determined v: #{v}"
-              #self.instance_variable_set("@#{k}", v)
             end
-            __setattr__(k, v)
+            self.instance_variable_set("@#{k}", v)
           end
-        end
-
-      # TODO: make sure this works
-        def __setattr__(name, val)
-          unless self.class.class_variable_get(:@@_WHITELIST).include? name
-            _check_attr(name.to_s, false)
-          end
-          self.instance_variable_set("@#{name}", val)
-          # Create the attr_accessor also
-          self.class.send(:attr_accessor, name)
         end
 
         def _check_attr(name, allow_ro)
@@ -211,7 +221,8 @@ module CmApi
             raise "Invalid property #{name} for class #{self.class.name}"
           end
           attr = _get_attributes()[name]
-          if !allow_ro && attr && attr.respond_to?('rw') && !attr.rw
+
+          if !allow_ro && attr && attr.instance_variable_defined?('@rw') && !attr.instance_variable_get('@rw')
             raise "Attribute #{name} of class #{self.class.name} is read only."
           end
           return attr
