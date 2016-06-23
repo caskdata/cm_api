@@ -48,7 +48,9 @@ module CmApi
 
       class Attr
 
-        DATE_FMT = "%Y-%m-%dT%H:%M:%S.%6NZ"
+        DATE_TO_FMT = "%Y-%m-%dT%H:%M:%S.%6NZ"
+        # Ruby's strptime doesn't support 6N microseconds. When deserializing we store 9 digits instead
+        DATE_FROM_FMT = "%Y-%m-%dT%H:%M:%S.%NZ"
 
         def initialize(atype = nil, rw = true, is_api_list = false)
           @_atype = atype
@@ -60,11 +62,10 @@ module CmApi
         def attr_to_json(value, preserve_ro)
           if value.respond_to? 'to_json_dict'
             return value.to_json_dict(preserve_ro)
-# uncomment when ApiConfig defined
           elsif value.is_a?(Hash) && @_atype == ApiConfig
             return config_to_api_list(value)
           elsif value.is_a?(DateTime)
-            return value.strftime(DATE_FMT)
+            return value.strftime(DATE_TO_FMT)
           elsif value.is_a?(Array) # TODO: tuple support
             if @_is_api_list
               return ApiList.new(value).to_json_dict()
@@ -85,7 +86,7 @@ module CmApi
           return nil if data.nil?
 
           if @_atype == DateTime
-            return DateTime.strptime(data.to_s, DATE_FMT)
+            return DateTime.strptime(data.to_s, DATE_FROM_FMT)
 # uncomment when ApiConfig defined
           elsif @_atype == ApiConfig
             # return hash for summary view, ApiList for full view. Detect from JSON data
@@ -276,7 +277,7 @@ module CmApi
           obj = self.new(resource_root)
           puts "  BACK IN FROM_JSON_DICT"
           puts "    setting attrs on #{obj}._set_attrs: #{dic}"
-          obj._set_attrs(dic, true, false)
+          obj._set_attrs(dic, true, true)
           return obj
         end
       end
