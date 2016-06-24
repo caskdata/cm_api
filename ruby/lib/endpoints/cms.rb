@@ -28,7 +28,7 @@ module CmApi
       include ::CmApi::Endpoints::Types
       include ::CmApi::Endpoints::Services
 
-      class ApiLicense < ::CmApi::Endpoints::Types::BaseApiObject
+      class ApiLicense < BaseApiObject
         @_ATTRIBUTES = {
           'owner' => ::CmApi::Endpoints::Types::ROAttr.new,
           'uuid' => ::CmApi::Endpoints::Types::ROAttr.new,
@@ -40,7 +40,7 @@ module CmApi
         end
       end
 
-      class ClouderaManager < ::CmApi::Endpoints::Types::BaseApiResource
+      class ClouderaManager < BaseApiResource
         def initialize(resource_root)
           super(resource_root)
         end

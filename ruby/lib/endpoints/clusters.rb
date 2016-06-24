@@ -22,14 +22,7 @@ module CmApi
   module Endpoints
     module Clusters
 
-      ## include types
-      #def self.included klass
-      #  puts "KLASS: #{klass.name}"
-      #  klass.class_eval do
-      #    puts "INCLUDING TYPES"
-          include ::CmApi::Endpoints::Types
-      #  end
-      #end
+      include ::CmApi::Endpoints::Types
 
       CLUSTERS_PATH = '/clusters'
 
@@ -44,10 +37,7 @@ module CmApi
           api_version = 1
         end
 
-        puts "[#{self.class}] Create cluster start: name: #{name}, version: #{version}"
-        puts "[#{self.class}] Create cluster instantiating ApiCluster obj"
         apicluster = ApiCluster.new(resource_root, name, version, fullVersion)
-        puts "[#{self.class}] invoking call()"
         return call(resource_root.method(:post), CLUSTERS_PATH, ApiCluster, true, [apicluster], nil, api_version)[0]
       end
 
@@ -63,8 +53,8 @@ module CmApi
         return call(resource_root.method(:delete), "#{CLUSTERS_PATH}/#{name}", ApiCluster)
       end
 
-      class ApiCluster < ::CmApi::Endpoints::Types::BaseApiResource
-      #class ApiCluster < BaseApiResource
+      #class ApiCluster < ::CmApi::Endpoints::Types::BaseApiResource
+      class ApiCluster < BaseApiResource
         @_ATTRIBUTES = {
           'name' => nil,
           'displayName' => nil,
@@ -76,11 +66,9 @@ module CmApi
         }
 
         def initialize(resource_root, name = nil, version = nil, fullVersion = nil)
-          puts "[#{self.class}] Initialize ApiCluster with resource root: #{resource_root}"
           # possible alternative to generate the hash argument dynamically, similar to python locals():
           #  method(__method__).parameters.map { |arg| arg[1] }.inject({}) { |h, a| h[a] = eval a.to_s; h}
           super(resource_root, {:name => name, :version => version, :fullVersion => fullVersion})
-          puts "[#{self.class}] Initialized ApiCluster #{to_s}"
         end
 
         def to_s()

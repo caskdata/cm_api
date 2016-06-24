@@ -78,11 +78,9 @@ module CmApi
       rest_client_args[:password] = @password
       rest_client_args[:headers] = _get_headers(headers)
 
-      require 'pp'
-      pp rest_client_args
-
       # Execute
-      puts "#{http_method} #{url}"
+      # TODO: add logger
+      # puts "#{http_method} #{url}"
       begin
         ::RestClient::Request.execute(rest_client_args)
       rescue => e

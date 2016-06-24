@@ -78,7 +78,6 @@ module CmApi
         end
 
         def _put_host()
-          puts "[#{self.class}] [#{self.inspect}] [#{__method__}] - calling _put"
           return _put('', ApiHost, false, self)
         end
 

@@ -43,9 +43,7 @@ module CmApi
     def invoke(method, relpath = nil, params = nil, data = nil, headers = nil)
       # Invoke an API method
       path = _join_uri(relpath)
-      puts "[#{self.class}] Invoking #{path}, params: #{params}, data: #{data}"
       resp = @client.execute(method, path, params, data, headers)
-      puts "[#{self.class}] Returning response: #{resp}"
 
       begin
         body = resp.body
@@ -53,7 +51,7 @@ module CmApi
         raise "Command '#{method} #{path}' failed: #{e}"
       end
 
-      puts "DEBUG #{method} Got response: #{body[0,32]}#{body.length > 32 ? '...' : ''}"
+      # puts "DEBUG #{method} Got response: #{body[0,32]}#{body.length > 32 ? '...' : ''}"
 
       # TODO: detect if response is application/json and catch json parse error
       begin

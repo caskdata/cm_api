@@ -25,7 +25,6 @@ require_relative 'endpoints/hosts.rb'
 
 
 module CmApi
-  #include ::CmApi::Endpoints::Clusters
 
   API_AUTH_REALM = 'Cloudera Manager'
   API_CURRENT_VERSION = 10

@@ -49,7 +49,7 @@ module CmApi
       class Attr
 
         DATE_TO_FMT = "%Y-%m-%dT%H:%M:%S.%6NZ"
-        # Ruby's strptime doesn't support 6N microseconds. When deserializing we store 9 digits instead
+        # Ruby's strptime doesn't support %6N microseconds. When deserializing we store 9 digits instead
         DATE_FROM_FMT = "%Y-%m-%dT%H:%M:%S.%NZ"
 
         def initialize(atype = nil, rw = true, is_api_list = false)
@@ -66,7 +66,7 @@ module CmApi
             return config_to_api_list(value)
           elsif value.is_a?(DateTime)
             return value.strftime(DATE_TO_FMT)
-          elsif value.is_a?(Array) # TODO: tuple support
+          elsif value.is_a?(Array) # TODO: any difference from python Tuple?
             if @_is_api_list
               return ApiList.new(value).to_json_dict()
             else
@@ -87,14 +87,12 @@ module CmApi
 
           if @_atype == DateTime
             return DateTime.strptime(data.to_s, DATE_FROM_FMT)
-# uncomment when ApiConfig defined
           elsif @_atype == ApiConfig
             # return hash for summary view, ApiList for full view. Detect from JSON data
             return {} unless data.key?('items')
             first = data['items'][0]
             return json_to_config(data, first.length == 2)
           elsif @_is_api_list
-            #return ApiList.from_json_dict(data, resource_root, @_atype)
             return ApiList.from_json_dict(self.class, data, resource_root, @_atype)
           elsif data.is_a?(Array)
             res = []
@@ -118,21 +116,15 @@ module CmApi
       end
 
       def check_api_version(resource_root, min_version)
-        puts "[#{self.class}] checking api version for minimum: #{min_version}"
-        #puts "CHECK API VERSION, RR: #{resource_root.inspect}"
         if resource_root.version < min_version
           raise "Api version #{min_version} is required but #{resource_root.version} is in use."
         end
       end
 
       def call(method, path, ret_type, ret_is_list = false, data = nil, params = nil, api_version = 1)
-        # method = :post, etc
-        puts "[#{self.class}] call() invoked for method: #{method}"
         check_api_version(method.receiver, api_version)
         if !data.nil?
-          puts "[#{self.class}] call(): converting data to Attr"
           data = (Attr.new(nil, true, true).attr_to_json(data, false)).to_json
-          puts "[#{self.class}] call(): converted data to :#{data}"
           ret = method.call(path, params, data)
         else
           ret = method.call(path, params)
@@ -165,34 +157,19 @@ module CmApi
           return self.class.instance_variable_get(:@_ATTRIBUTES)
         end
 
-        # TODO: I don't think this is needed... moving this logic to initialize
-        def self.init(resource_root, attrs = nil)
-          str_attrs = {}
-          if attrs
-            attrs.each do |k, v|
-              unless ['self', 'resource_root'].include? k
-                str_attrs[k] = v
-              end
-            end
-          end
-          initialize(resource_root, str_attrs)
-        end
-
         def initialize(resource_root, args = nil)
-          puts "[#{self.class}] Initializing BaseApiObject with args: #{args}"
           if args 
             args.reject! {|x, _v| [:resource_root, :self].include? x}
           end
           
           @_resource_root = resource_root
-          puts "[#{self.class}] set resource root: #{@_resource_root.inspect}"
 
           # Initialize @_ATTRIBUTES if subclass has not defined it
           self.class.instance_variable_set(:@_ATTRIBUTES, {}) unless self.class.instance_variable_get(:@_ATTRIBUTES)
 
           self._get_attributes().each do |name, attr|
             self.instance_variable_set("@#{name}", nil)
-            # Create the attr_accessors
+            # Create the (custom) attr_accessors
             self.class.send(:attr_reader, name)
             self.class.send(:attr_writer_with_validation, name)
           end
@@ -204,20 +181,15 @@ module CmApi
       # TODO: functions should be converted to hash arguments, as they are often called using named parameters in python
         def _set_attrs(attrs, allow_ro = false, from_json = true)
           attrs.each do |k, v|
-            #puts "processing k,v: #{k} => #{v}"
             attr = _check_attr(k.to_s, allow_ro)
             if attr && from_json
-              #puts "checking for v"
               v = attr.attr_from_json(@_resource_root, v)
-              #puts "determined v: #{v}"
             end
             self.instance_variable_set("@#{k}", v)
           end
         end
 
         def _check_attr(name, allow_ro)
-          #require 'pp'
-          #pp self._get_attributes()
           unless self._get_attributes().key? name
             raise "Invalid property #{name} for class #{self.class.name}"
           end
@@ -271,12 +243,7 @@ module CmApi
         end
 
         def self.from_json_dict(dic, resource_root)
-          puts "FROM_JSON_DICT called"
-          puts "  rr: #{resource_root}"
-          puts "  self: #{self}"
           obj = self.new(resource_root)
-          puts "  BACK IN FROM_JSON_DICT"
-          puts "    setting attrs on #{obj}._set_attrs: #{dic}"
           obj._set_attrs(dic, true, true)
           return obj
         end
@@ -331,19 +298,14 @@ module CmApi
         end
 
         def _put(rel_path, ret_type, ret_is_list = false, data = nil, params = nil, api_version = 1)
-          puts "[#{self.class}] [#{self.inspect}] [#{__method__}] - calling _call(:put, #{rel_path}, #{ret_type}, #{ret_is_list}, #{data}, #{params}, #{api_version})"
           return _call(:put, rel_path, ret_type, ret_is_list, data, params, api_version)
         end
 
         def _call(method_name, rel_path, ret_type, ret_is_list = false, data = nil, params = nil, api_version = 1)
-          puts "[#{self.class}] [#{self.inspect}] [#{__method__}] - in _call()"
           path = _path
           if rel_path
             path += '/' + rel_path
           end
-          puts "[#{self.class}] [#{self.inspect}] [#{__method__}] rr is: #{@_resource_root.inspect}"
-          puts "[#{self.class}] [#{self.inspect}] [#{__method__}] setting method to: #{@_resource_root.method(method_name)}"
-          #return call(method, path, ret_type, ret_is_list, data, params, api_version)
           return call(@_resource_root.method(method_name), path, ret_type, ret_is_list, data, params, api_version)
         end
       end
@@ -352,11 +314,7 @@ module CmApi
         LIST_KEY = 'items'
 
         def initialize(objects, resource_root = nil, *args)
-          #puts "APILIST.initialize"
-          #puts "  objects: #{objects}"
-          #puts "  args: #{args}"
           super(resource_root, args)
-          #puts "SUPER INITIALIZED"
           instance_variable_set('@objects', objects)
         end
 
@@ -389,24 +347,7 @@ module CmApi
 
         #TODO python __getslice equivalent
 
-#       def self.from_json_dict(dic, resource_root)
-#          puts "FROM_JSON_DICT called"
-#          puts "  rr: #{resource_root}"
-#          puts "  self: #{self}"
-#          obj = self.new(resource_root)
-#          puts "  BACK IN FROM_JSON_DICT"
-#          puts "    setting attrs on #{obj}._set_attrs: #{dic}"
-#          obj._set_attrs(dic, true, false)
-#          return obj
-
-
-#        def self.from_json_dict(dic, resource_root, member_cls = nil)
         def self.from_json_dict(dic, resource_root, member_cls = nil)
-          puts "APILIST.from_json_dict called"
-          puts "  dic: #{dic}"
-          puts "  rr: #{resource_root}"
-          puts "  member_cls: #{member_cls}"
-          puts "  self: #{self}"
           if member_cls.nil?
             member_cls = self.instance_variable_get(:@_MEMBER_CLASS)
           end
