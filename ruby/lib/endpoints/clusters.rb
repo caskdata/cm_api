@@ -84,6 +84,19 @@ module CmApi
           cluster = _put('', ApiCluster, false, dic, params)
           _update(cluster)
         end
+
+        def get_service_types()
+          resp = @_resource_root.get(_path() + '/serviceTypes')
+          return resp[ApiList::LIST_KEY]
+        end
+
+        def get_commands(view = nil)
+          return _get('commands', ApiCommand, true, view && { 'view' => view } || nil)
+        end
+
+        def list_hosts()
+          return _get('hosts', ApiHostRef, true, nil, 3)
+        end
       end 
     end
   end
