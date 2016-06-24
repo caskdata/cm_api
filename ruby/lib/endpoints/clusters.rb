@@ -60,8 +60,10 @@ module CmApi
           'clusterUrl' => nil,
           'version' => nil,
           'fullVersion' => nil,
+          'hostsUrl' => ROAttr.new,
           'maintenanceMode' => ROAttr.new,
-          'maintenanceOwners' => ROAttr.new
+          'maintenanceOwners' => ROAttr.new,
+          'entityStatus' => ROAttr.new
         }
 
         def initialize(resource_root, name = nil, version = nil, fullVersion = nil)

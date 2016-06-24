@@ -62,7 +62,9 @@ module CmApi
           'maintenanceOwners' => ROAttr.new,
           'numCores' => ROAttr.new,
           'numPhysicalCores' => ROAttr.new,
-          'totalPhysMemBytes' => ROAttr.new
+          'totalPhysMemBytes' => ROAttr.new,
+          'entityStatus' => ROAttr.new,
+          'clusterRef' => ROAttr.new(ApiClusterRef)
         }
 
         def initialize(resource_root, hostId = nil, hostname = nil, ipAddress = nil, rackId = nil)

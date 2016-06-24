@@ -29,7 +29,7 @@ require_relative 'endpoints/services.rb'
 module CmApi
 
   API_AUTH_REALM = 'Cloudera Manager'
-  API_CURRENT_VERSION = 10
+  API_CURRENT_VERSION = 12
 
   # Any error result from the API is converted into this exception type.
   # This handles errors from the HTTP level as well as the API level.

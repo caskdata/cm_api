@@ -455,7 +455,8 @@ module CmApi
               'hostRef'       => ROAttr.new(ApiHostRef),
               'children'      => ROAttr.new(ApiCommand, true),
               'parent'        => ROAttr.new(ApiCommand),
-              'resultDataUrl' => ROAttr.new
+              'resultDataUrl' => ROAttr.new,
+              'canRetry'      => ROAttr.new
             }
             self.class.instance_variable_set(:@_ATTRIBUTES, _attributes)
           end
@@ -534,7 +535,8 @@ module CmApi
           'description' => ROAttr.new,
           'relatedName' => ROAttr.new,
           'validationState' => ROAttr.new,
-          'validationMessage' => ROAttr.new
+          'validationMessage' => ROAttr.new,
+          'validationWarningsSuppressed' => ROAttr.new
         }
 
         def initialize(resource_root, name = nil, value = nil)

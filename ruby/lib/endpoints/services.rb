@@ -65,8 +65,10 @@ module CmApi
           'configStalenessStatus' => ROAttr.new,
           'clientConfigStalenessStatus' => ROAttr.new,
           'serviceUrl' => ROAttr.new,
+          'roleInstancesUrl' => ROAttr.new,
           'maintenanceMode' => ROAttr.new,
-          'maintenanceOwners' => ROAttr.new
+          'maintenanceOwners' => ROAttr.new,
+          'entityStatus' => ROAttr.new
         }
 
         def initialize(resource_root, name = nil, type = nil)
