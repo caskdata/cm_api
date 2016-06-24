@@ -20,6 +20,7 @@ require 'rest-client'
 require 'uri'
 
 module CmApi
+  # Any error result from the Rest API is converted into this exception type.
   class RestException < RuntimeError
     attr_reader :code, :message
 
@@ -35,9 +36,14 @@ module CmApi
 
   #TODO: add logger
   #TODO: use Net::HTTP instead of rest-client
+  # Basic HTTP client tailored for rest APIs.
   class HttpClient
     attr_reader :base_url
     attr_accessor :headers
+
+    # Creates an HTTP(S) client to connect to the Cloudera Manager API.
+    #   @param base_url: The base url to the API.
+    #   @param exc_class: An exception class to handle non-200 results.
     def initialize(base_url, exc_class = nil)
       @base_url = base_url.chomp('/')
       @exc_class = exc_class || RestException
@@ -59,6 +65,13 @@ module CmApi
       @password = password
     end
 
+    # Submit an HTTP request.
+    #   @param http_method: GET, POST, PUT, DELETE
+    #   @param path: The path of the resource.
+    #   @param params: Key-value parameter data.
+    #   @param data: The data to attach to the body of the request.
+    #   @param headers: The headers to set for this request.
+    #   @return: HTTP respons
     def execute(http_method, path, params = nil, data = nil, headers = nil)
       # Prepare URL and params
       url = _make_url(path, params)

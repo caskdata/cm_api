@@ -45,7 +45,7 @@ module CmApi
         return call(resource_root.method(:get), "#{CLUSTERS_PATH}/#{name}", ApiCluster)
       end
 
-      def get_all_clusters(resource_root, view = nil)
+      def get_all_clusters(resource_root = self, view = nil)
         return call(resource_root.method(:get), CLUSTERS_PATH, ApiCluster, true, nil, view && { 'view' => view } || nil)
       end
 

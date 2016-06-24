@@ -22,6 +22,8 @@ require_relative 'resource'
 require_relative 'endpoints/types.rb'
 require_relative 'endpoints/clusters.rb'
 require_relative 'endpoints/hosts.rb'
+require_relative 'endpoints/cms.rb'
+require_relative 'endpoints/services.rb'
 
 
 module CmApi
@@ -29,10 +31,14 @@ module CmApi
   API_AUTH_REALM = 'Cloudera Manager'
   API_CURRENT_VERSION = 10
 
+  # Any error result from the API is converted into this exception type.
+  # This handles errors from the HTTP level as well as the API level.
   class ApiException < RestException
     def initialize(error)
+      # The parent class will set up @code and @message
       super
       begin
+        # See if the body is json
         json_body = JSON.parse(@message)
         @message = json_body['message']
       rescue
@@ -41,11 +47,22 @@ module CmApi
     end
   end
 
+  # Resource object that provides methods for managing the top-level API resources.
   class ApiResource < Resource
     include ::CmApi::Endpoints::Clusters
     include ::CmApi::Endpoints::Hosts
 
     attr_accessor :version
+
+    # Creates a Resource object that provides API endpoints
+    #   @param server_host: The hostname of the Cloudera Manager server.
+    #   @param server_port: The port of the server. Defaults to 7180 (http) or
+    #    7183 (https).
+    #   @param username: Login name.
+    #   @param password: Login password.
+    #   @param use_tls: Whether to use tls (https).
+    #   @param version: API version.
+    #   @return: Resource object referring to the root.
     def initialize(server_host, server_port = nil, username = 'admin', password = 'admin', use_tls = false, version = API_CURRENT_VERSION)
       @version = version
       protocol = use_tls ? 'https' : 'http'

@@ -20,7 +20,11 @@ require 'rest-client'
 require 'json'
 
 module CmApi
+  # Encapsulates a resource, and provides actions to invoke on it.
   class Resource
+
+    # @param client: A Client object.
+    # @param relpath: The relative path of the resource.
     def initialize(client, relpath = '')
       @client = client
       @path = relpath.chomp('/')
@@ -40,6 +44,8 @@ module CmApi
       end
     end
 
+    # Invoke an API method.
+    #   @return: Raw body or JSON dictionary (if response content type is JSON).
     def invoke(method, relpath = nil, params = nil, data = nil, headers = nil)
       # Invoke an API method
       path = _join_uri(relpath)
@@ -62,9 +68,13 @@ module CmApi
       end
     end
 
+    # Invoke the GET method on a resource.
+    #   @param relpath: Optional. A relative path to this resource's path.
+    #   @param params: Key-value data.
+    #   @return: A dictionary of the JSON result.
     def get(relpath = nil, params = nil)
-   #   for retry in 0..@retries+1
-   #      sleep(@retry_sleep) if retry
+    #  for retry in 0..@retries+1
+    #     sleep(@retry_sleep) if retry
         begin
           return invoke(:get, relpath, params)
         rescue => e
@@ -74,14 +84,30 @@ module CmApi
     #  end
     end
 
+    # Invoke the DELETE method on a resource.
+    #   @param relpath: Optional. A relative path to this resource's path.
+    #   @param params: Key-value data.
+    #   @return: A dictionary of the JSON result.
     def delete(relpath = nil, params = nil)
       return invoke(:delete, relpath, params)
     end
 
+    # Invoke the POST method on a resource.
+    #   @param relpath: Optional. A relative path to this resource's path.
+    #   @param params: Key-value data.
+    #   @param data: Optional. Body of the request.
+    #   @param contenttype: Optional.
+    #   @return: A dictionary of the JSON result.
     def post(relpath = nil, params = nil, data = nil, contenttype = nil)
       return invoke(:post, relpath, params, data, _make_headers(contenttype))
     end
 
+    # Invoke the PUT method on a resource.
+    #   @param relpath: Optional. A relative path to this resource's path.
+    #   @param params: Key-value data.
+    #   @param data: Optional. Body of the request.
+    #   @param contenttype: Optional.
+    #   @return: A dictionary of the JSON result.
     def put(relpath = nil, params = nil, data = nil, contenttype = nil)
       return invoke(:put, relpath, params, data, _make_headers(contenttype))
     end
