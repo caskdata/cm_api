@@ -27,7 +27,7 @@ class Class
       arg = arg.to_s
 
       # Custom setter to call _check_attr function before setting
-      self.class_eval %Q{
+      class_eval %{
         def #{arg}=(val)
           unless self.class.class_variable_get(:@@_WHITELIST).include? val
             _check_attr("#{arg}", false)
@@ -41,16 +41,13 @@ class Class
   end
 end
 
-
 module CmApi
   module Endpoints
     module Types
-
       class Attr
-
-        DATE_TO_FMT = "%Y-%m-%dT%H:%M:%S.%6NZ"
+        DATE_TO_FMT = '%Y-%m-%dT%H:%M:%S.%6NZ'.freeze
         # Ruby's strptime doesn't support %6N microseconds. When deserializing we store 9 digits instead
-        DATE_FROM_FMT = "%Y-%m-%dT%H:%M:%S.%NZ"
+        DATE_FROM_FMT = '%Y-%m-%dT%H:%M:%S.%NZ'.freeze
 
         def initialize(atype = nil, rw = true, is_api_list = false)
           @_atype = atype
@@ -68,7 +65,7 @@ module CmApi
             return value.strftime(DATE_TO_FMT)
           elsif value.is_a?(Array) # TODO: any difference from python Tuple?
             if @_is_api_list
-              return ApiList.new(value).to_json_dict()
+              return ApiList.new(value).to_json_dict
             else
               res = []
               value.each do |x|
@@ -108,7 +105,6 @@ module CmApi
         end
       end
 
-
       class ROAttr < Attr
         def initialize(atype = nil, is_api_list = false)
           super(atype, false, is_api_list)
@@ -124,7 +120,7 @@ module CmApi
       def call(method, path, ret_type, ret_is_list = false, data = nil, params = nil, api_version = 1)
         check_api_version(method.receiver, api_version)
         if !data.nil?
-          data = (Attr.new(nil, true, true).attr_to_json(data, false)).to_json
+          data = Attr.new(nil, true, true).attr_to_json(data, false).to_json
           ret = method.call(path, params, data)
         else
           ret = method.call(path, params)
@@ -151,56 +147,50 @@ module CmApi
         # @_ATTRIBUTES is not inherited by subclasses, but rather initialized in the constructor below
         @_ATTRIBUTES = {}
         # @@_WHITELIST is a global, shared among all subclasses. It should not be modified.
-        @@_WHITELIST = [ '_resource_root', '_attributes' ]
+        @@_WHITELIST = %w(_resource_root _attributes)
 
         attr_reader :_resource_root
 
-        def _get_attributes()
-          return self.class.instance_variable_get(:@_ATTRIBUTES)
+        def _get_attributes
+          self.class.instance_variable_get(:@_ATTRIBUTES)
         end
 
         def initialize(resource_root, args = nil)
-          if args 
-            args.reject! {|x, _v| [:resource_root, :self].include? x}
-          end
-          
+          args.reject! { |x, _v| [:resource_root, :self].include? x } if args
+
           @_resource_root = resource_root
 
           # Initialize @_ATTRIBUTES if subclass has not defined it
           self.class.instance_variable_set(:@_ATTRIBUTES, {}) unless self.class.instance_variable_get(:@_ATTRIBUTES)
 
-          self._get_attributes().each do |name, attr|
-            self.instance_variable_set("@#{name}", nil)
+          _get_attributes.each do |name, _attr|
+            instance_variable_set("@#{name}", nil)
             # Create the (custom) attr_accessors
             self.class.send(:attr_reader, name)
             self.class.send(:attr_writer_with_validation, name)
           end
-          if args
-            _set_attrs(args, false, false)
-          end
+          _set_attrs(args, false, false) if args
         end
 
-      # TODO: functions should be converted to hash arguments, as they are often called using named parameters in python
+        # TODO: functions should be converted to hash arguments, as they are often called using named parameters in python
         def _set_attrs(attrs, allow_ro = false, from_json = true)
           attrs.each do |k, v|
             attr = _check_attr(k.to_s, allow_ro)
-            if attr && from_json
-              v = attr.attr_from_json(@_resource_root, v)
-            end
-            self.instance_variable_set("@#{k}", v)
+            v = attr.attr_from_json(@_resource_root, v) if attr && from_json
+            instance_variable_set("@#{k}", v)
           end
         end
 
         def _check_attr(name, allow_ro)
-          unless self._get_attributes().key? name
+          unless _get_attributes.key? name
             raise "Invalid property #{name} for class #{self.class.name}"
           end
-          attr = _get_attributes()[name]
+          attr = _get_attributes[name]
 
           if !allow_ro && attr && attr.instance_variable_defined?('@rw') && !attr.instance_variable_get('@rw')
             raise "Attribute #{name} of class #{self.class.name} is read only."
           end
-          return attr
+          attr
         end
 
         def _update(api_obj)
@@ -208,10 +198,10 @@ module CmApi
             raise "Class #{self.class} does not derive from #{api_obj.class}; cannot update attributes."
           end
 
-          self._get_attributes().keys.each do |name|
+          _get_attributes.keys.each do |name|
             begin
               val = api_obj.instance_variable_get("@#{name}")
-              self.instance_variable_set("@#{name}", val)
+              instance_variable_set("@#{name}", val)
             rescue
               puts "ignoring failed update for attr: #{name}"
             end
@@ -220,42 +210,40 @@ module CmApi
 
         def to_json_dict(preserve_ro = false)
           dic = {}
-          self._get_attributes().each do |name, attr|
+          _get_attributes.each do |name, attr|
             next if !preserve_ro && attr && attr.respond_to?('rw') && !attr.rw
             begin
-              value = self.instance_variable_get("@#{name}")
+              value = instance_variable_get("@#{name}")
               unless value.nil?
-                if attr
-                  dic[name] = attr.attr_to_json(value, preserve_ro)
-                else
-                  dic[name] = value
-                end
+                dic[name] = if attr
+                              attr.attr_to_json(value, preserve_ro)
+                            else
+                              value
+                            end
               end
             rescue
               puts "ignoring some failed to_json_dict with #{name}"
             end
           end
-          return dic
+          dic
         end
 
         def to_str
-          name = self._get_attributes().keys()[0]
-          value = self.instance_variable_get("@#{name}") || nil
-          return "#{self.class.name}: #{name} = #{value}"
+          name = _get_attributes.keys[0]
+          value = instance_variable_get("@#{name}") || nil
+          "#{self.class.name}: #{name} = #{value}"
         end
 
         def self.from_json_dict(dic, resource_root)
-          obj = self.new(resource_root)
+          obj = new(resource_root)
           obj._set_attrs(dic, true, true)
-          return obj
+          obj
         end
       end
 
-
       class BaseApiResource < BaseApiObject
-
         def _api_version
-          return 1
+          1
         end
 
         def _path
@@ -271,49 +259,47 @@ module CmApi
         end
 
         def _cmd(command, data = nil, params = nil, api_version = 1)
-          return _post('commands/' + command, ApiCommand, false, data, params, api_version)
+          _post('commands/' + command, ApiCommand, false, data, params, api_version)
         end
 
         def _get_config(rel_path, view, api_version = 1)
           _require_min_api_version(api_version)
-          params = view && { 'view' => view} || nil
+          params = view && { 'view' => view } || nil
           resp = @_resource_root.get(_path + '/' + rel_path, params)
-          return json_to_config(resp, view == 'full')
+          json_to_config(resp, view == 'full')
         end
 
         def _update_config(rel_path, config, api_version = 1)
           _require_min_api_version(api_version)
           resp = @_resource_root.put(_path + '/' + rel_path, nil, config_to_json(config))
-          return json_to_config(resp, false)
+          json_to_config(resp, false)
         end
 
         def _delete(rel_path, ret_type, ret_is_list = false, params = nil, api_version = 1)
-          return _call(:delete, rel_path, ret_type, ret_is_list, nil, params, api_version)
+          _call(:delete, rel_path, ret_type, ret_is_list, nil, params, api_version)
         end
 
         def _get(rel_path, ret_type, ret_is_list = false, params = nil, api_version = 1)
-          return _call(:get, rel_path, ret_type, ret_is_list, nil, params, api_version)
+          _call(:get, rel_path, ret_type, ret_is_list, nil, params, api_version)
         end
 
         def _post(rel_path, ret_type, ret_is_list = false, data = nil, params = nil, api_version = 1)
-          return _call(:post, rel_path, ret_type, ret_is_list, data, params, api_version)
+          _call(:post, rel_path, ret_type, ret_is_list, data, params, api_version)
         end
 
         def _put(rel_path, ret_type, ret_is_list = false, data = nil, params = nil, api_version = 1)
-          return _call(:put, rel_path, ret_type, ret_is_list, data, params, api_version)
+          _call(:put, rel_path, ret_type, ret_is_list, data, params, api_version)
         end
 
         def _call(method_name, rel_path, ret_type, ret_is_list = false, data = nil, params = nil, api_version = 1)
           path = _path
-          if rel_path
-            path += '/' + rel_path
-          end
-          return call(@_resource_root.method(method_name), path, ret_type, ret_is_list, data, params, api_version)
+          path += '/' + rel_path if rel_path
+          call(@_resource_root.method(method_name), path, ret_type, ret_is_list, data, params, api_version)
         end
       end
 
       class ApiList < BaseApiObject
-        LIST_KEY = 'items'
+        LIST_KEY = 'items'.freeze
 
         def initialize(objects, resource_root = nil, *args)
           super(resource_root, args)
@@ -321,7 +307,7 @@ module CmApi
         end
 
         def to_str
-          return "<ApiList>(#{@objects.length}): [#{@objects.map { |x| x.to_str}.join(', ')}]"
+          "<ApiList>(#{@objects.length}): [#{@objects.map(&:to_str).join(', ')}]"
         end
 
         def to_json_dict(preserve_ro = false)
@@ -332,7 +318,7 @@ module CmApi
             res << attr.attr_to_json(x, preserve_ro)
           end
           ret[LIST_KEY] = res
-          return ret
+          ret
         end
 
         def length
@@ -347,12 +333,10 @@ module CmApi
           @objects[i]
         end
 
-        #TODO python __getslice equivalent
+        # TODO: python __getslice equivalent
 
         def self.from_json_dict(dic, resource_root, member_cls = nil)
-          if member_cls.nil?
-            member_cls = self.instance_variable_get(:@_MEMBER_CLASS)
-          end
+          member_cls = instance_variable_get(:@_MEMBER_CLASS) if member_cls.nil?
           attr = Attr.new(member_cls)
           items = []
 
@@ -361,17 +345,17 @@ module CmApi
               items << attr.attr_from_json(resource_root, x)
             end
           end
-          ret = self.new(items)
+          ret = new(items)
 
           # Handle if class declares custom attributes
-          if self.instance_variable_get(:@_ATTRIBUTES)
+          if instance_variable_get(:@_ATTRIBUTES)
             if dic.key? LIST_KEY
               dic = dic.clone
               dic.delete(LIST_KEY)
             end
             ret._set_attrs(dic, true)
           end
-          return ret
+          ret
         end
       end
 
@@ -383,11 +367,11 @@ module CmApi
         def initialize(resource_root, hostId = nil)
           # possible alternative to generate the hash argument dynamically, similar to python locals():
           #  method(__method__).parameters.map { |arg| arg[1] }.inject({}) { |h, a| h[a] = eval a.to_s; h}
-          super(resource_root, {:hostId => hostId})
+          super(resource_root, { hostId: hostId })
         end
 
         def to_str
-          return "<ApiHostRef>: #{@hostId}"
+          "<ApiHostRef>: #{@hostId}"
         end
       end
 
@@ -399,7 +383,7 @@ module CmApi
         }
 
         def initialize(resource_root, serviceName = nil, clusterName = nil, peerName = nil)
-          super(resource_root, {:serviceName => serviceName, :clusterName => clusterName, :peerName => peerName})
+          super(resource_root, { serviceName: serviceName, clusterName: clusterName, peerName: peerName })
         end
       end
 
@@ -409,7 +393,7 @@ module CmApi
         }
 
         def initialize(resource_root, clusterName = nil)
-          super(resource_root, {:clusterName => clusterName})
+          super(resource_root, { clusterName: clusterName })
         end
       end
 
@@ -421,7 +405,7 @@ module CmApi
         }
 
         def initialize(resource_root, serviceName = nil, roleName = nil, clusterName = nil)
-          super(resource_root, {:serviceName => serviceName, :roleName => roleName, :clusterName => clusterName})
+          super(resource_root, { serviceName: serviceName, roleName: roleName, clusterName: clusterName })
         end
       end
 
@@ -431,16 +415,16 @@ module CmApi
         }
 
         def initialize(resource_root, roleConfigGroupName = nil)
-          super(resource_root, {:roleConfigGroupName => roleConfigGroupName})
+          super(resource_root, { roleConfigGroupName: roleConfigGroupName })
         end
       end
 
       class ApiCommand < BaseApiObject
         SYNCHRONOUS_COMMAND_ID = -1
 
-        def _get_attributes()
+        def _get_attributes
           unless self.class.instance_variable_get(:@_ATTRIBUTES) &&
-                   !self.class.instance_variable_get(:@_ATTRIBUTES).empty?
+                 !self.class.instance_variable_get(:@_ATTRIBUTES).empty?
             _attributes = {
               'id'            => ROAttr.new,
               'name'          => ROAttr.new,
@@ -464,37 +448,33 @@ module CmApi
         end
 
         def to_str
-          return "<ApiCommand>: '#{@name}' (id: #{@id}; active: #{@active}; success: #{@success}"
+          "<ApiCommand>: '#{@name}' (id: #{@id}; active: #{@active}; success: #{@success}"
         end
 
         def _path
-          return "/commands/#{@id}"
+          "/commands/#{@id}"
         end
 
         def fetch
-          if @id == ApiCommand::SYNCHRONOUS_COMMAND_ID
-            return self
-          end
+          return self if @id == ApiCommand::SYNCHRONOUS_COMMAND_ID
 
-          resp = @_resource_root.get(_path())
-          return ApiCommand.from_json_dict(resp, @_resource_root)
+          resp = @_resource_root.get(_path)
+          ApiCommand.from_json_dict(resp, @_resource_root)
         end
 
         def wait(timeout = nil)
-          if @id == ApiCommand::SYNCHRONOUS_COMMAND_ID
-            return self
-          end
+          return self if @id == ApiCommand::SYNCHRONOUS_COMMAND_ID
 
           sleep_sec = 5
 
-          if timeout.nil?
-            deadline = nil
-          else
-            deadline = Time.now() + timeout
-          end
+          deadline = if timeout.nil?
+                       nil
+                     else
+                       Time.now + timeout
+                     end
 
-          loop {
-            cmd = fetch()
+          loop do
+            cmd = fetch
             return cmd unless cmd.active
 
             if !deadline.nil?
@@ -507,20 +487,17 @@ module CmApi
             else
               sleep(sleep_sec)
             end
-          }
+          end
         end
 
         def abort
-          if @id == ApiCommand.SYNCHRONOUS_COMMAND_ID
-            return self
-          end
+          return self if @id == ApiCommand.SYNCHRONOUS_COMMAND_ID
 
-          path = _path() + '/abort'
+          path = _path + '/abort'
           resp = @_resource_root.post(path)
-          return ApiCommand.from_json_dict(resp, @_resource_root)
+          ApiCommand.from_json_dict(resp, @_resource_root)
         end
       end
-
 
       #
       # Configuration helpers.
@@ -540,39 +517,38 @@ module CmApi
         }
 
         def initialize(resource_root, name = nil, value = nil)
-          super(resource_root, {:name => name, :value => value})
+          super(resource_root, { name: name, value: value })
         end
 
         def to_str
-          return "<ApiConfig>: #{@name} = #{@value}"
+          "<ApiConfig>: #{@name} = #{@value}"
         end
       end
 
       def config_to_api_list(dic)
         config = []
         dic.each do |k, v|
-          config << {'name' => k, 'value' => v}
+          config << { 'name' => k, 'value' => v }
         end
-        return { ApiList.LIST_KEY => config }
+        { ApiList.LIST_KEY => config }
       end
 
-      def config_to_json(dic)
-        return config_to_api_list.to_json
+      def config_to_json(_dic)
+        config_to_api_list.to_json
       end
 
       def json_to_config(dic, full = false)
         config = {}
         dic['items'].each do |entry|
           k = entry['name']
-          if full
-            config[k] = ApiConfig.from_json_dict(entry, nil)
-          else
-            config[k] = entry['value']
-          end
+          config[k] = if full
+                        ApiConfig.from_json_dict(entry, nil)
+                      else
+                        entry['value']
+                      end
         end
-        return config
+        config
       end
-
     end
   end
 end

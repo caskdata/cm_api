@@ -1,4 +1,4 @@
-##!/usr/bin/env ruby
+#!/usr/bin/env ruby
 # encoding: UTF-8
 #
 # Copyright © 2016 Cask Data, Inc.
@@ -25,10 +25,8 @@ require_relative 'endpoints/hosts.rb'
 require_relative 'endpoints/cms.rb'
 require_relative 'endpoints/services.rb'
 
-
 module CmApi
-
-  API_AUTH_REALM = 'Cloudera Manager'
+  API_AUTH_REALM = 'Cloudera Manager'.freeze
   API_CURRENT_VERSION = 12
 
   # Any error result from the API is converted into this exception type.
@@ -66,12 +64,10 @@ module CmApi
     def initialize(server_host, server_port = nil, username = 'admin', password = 'admin', use_tls = false, version = API_CURRENT_VERSION)
       @version = version
       protocol = use_tls ? 'https' : 'http'
-      if server_port.nil?
-        server_port = use_tls ? 7183 : 7180
-      end
+      server_port = use_tls ? 7183 : 7180 if server_port.nil?
       base_url = "#{protocol}://#{server_host}:#{server_port}/api/v#{version}"
 
-      client = HttpClient.new(base_url, exc_class=ApiException) 
+      client = HttpClient.new(base_url, exc_class = ApiException)
       client.set_basic_auth(username, password, API_AUTH_REALM)
       client.headers = { :'content-type' => 'application/json' }
       super(client)

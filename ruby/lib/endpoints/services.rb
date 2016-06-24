@@ -16,40 +16,39 @@
 # limitations under the License.
 #
 
-#require 'date'
+# require 'date'
 
 require_relative 'types'
 
 module CmApi
   module Endpoints
-    module Services 
-
+    module Services
       include ::CmApi::Endpoints::Types
-      #include ::CmApi::Endpoints::Roles
+      # include ::CmApi::Endpoints::Roles
 
-      SERVICES_PATH = '/clusters/%s/services'
-      SERVICE_PATH = '/clusters/%s/services/%s'
-      ROLETYPES_CFG_KEY = 'roleTypeConfigs'
+      SERVICES_PATH = '/clusters/%s/services'.freeze
+      SERVICE_PATH = '/clusters/%s/services/%s'.freeze
+      ROLETYPES_CFG_KEY = 'roleTypeConfigs'.freeze
 
       def create_service(resource_root, name, service_type, cluster_name = 'default')
         apiservice = ApiService.new(resource_root, name, service_type)
-        return call(resource_root.method(:post), SERVICES_PATH % [cluster_name], ApiService, true, [apiservice])[0]
+        call(resource_root.method(:post), SERVICES_PATH % [cluster_name], ApiService, true, [apiservice])[0]
       end
 
       def get_service(resource_root, name, cluster_name = 'default')
-        return _get_service(resource_root, "%s/%s" % [ (SERVICES_PATH % cluster_name), name ] )
+        _get_service(resource_root, '%s/%s' % [(SERVICES_PATH % cluster_name), name])
       end
 
       def _get_service(resource_root, path)
-        return call(resource_root.method(:get), path, ApiService)
+        call(resource_root.method(:get), path, ApiService)
       end
 
       def get_all_services(resource_root, cluster_name = 'default', view = nil)
-        return call(resource_root.method(:get), SERVICES_PATH % [cluster_name], ApiService, true, nil, view && { 'view' => view } || nil)
+        call(resource_root.method(:get), SERVICES_PATH % [cluster_name], ApiService, true, nil, view && { 'view' => view } || nil)
       end
 
       def delete_service(resource_root, name, cluster_name = 'default')
-        return call(resource_root.method(:delete), "%s/%s" % [ (SERVICES_PATH % cluster_name), name ], ApiService)
+        call(resource_root.method(:delete), '%s/%s' % [(SERVICES_PATH % cluster_name), name], ApiService)
       end
 
       class ApiService < BaseApiResource
@@ -72,33 +71,30 @@ module CmApi
         }
 
         def initialize(resource_root, name = nil, type = nil)
-          super(resource_root, {:name => name, :type => type })
+          super(resource_root, { name: name, type: type })
         end
 
-        def to_s()
-          return "<ApiService>: #{@name} (cluster: #{_get_cluster_name})"
+        def to_s
+          "<ApiService>: #{@name} (cluster: #{_get_cluster_name})"
         end
 
-        def _get_cluster_name()
+        def _get_cluster_name
           if instance_variable_get('@clusterRef') && @clusterRef
             return @clusterRef.clusterName
           end
         end
 
-        def _path()
+        def _path
           # This method assumes that lack of a cluster reference means that the
           # object refers to the Cloudera Management Services instance.
-          if _get_cluster_name()
-            return SERVICE_PATH % [_get_cluster_name, @name]
-          end 
-          return '/cm/service'
+          return SERVICE_PATH % [_get_cluster_name, @name] if _get_cluster_name
+          '/cm/service'
         end
 
         def get_commands(view = nil)
-          return _get('commands', ApiCommand, true, nil, view && { 'view' => view } || nil)
+          _get('commands', ApiCommand, true, nil, view && { 'view' => view } || nil)
         end
-
-      end 
+      end
     end
   end
 end

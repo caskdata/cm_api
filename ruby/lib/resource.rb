@@ -22,7 +22,6 @@ require 'json'
 module CmApi
   # Encapsulates a resource, and provides actions to invoke on it.
   class Resource
-
     # @param client: A Client object.
     # @param relpath: The relative path of the resource.
     def initialize(client, relpath = '')
@@ -73,15 +72,15 @@ module CmApi
     #   @param params: Key-value data.
     #   @return: A dictionary of the JSON result.
     def get(relpath = nil, params = nil)
-    #  for retry in 0..@retries+1
-    #     sleep(@retry_sleep) if retry
-        begin
-          return invoke(:get, relpath, params)
-        rescue => e
-          # TODO: detect timeout and retry
-          raise e
-        end
-    #  end
+      #  for retry in 0..@retries+1
+      #     sleep(@retry_sleep) if retry
+
+      return invoke(:get, relpath, params)
+    rescue => e
+      # TODO: detect timeout and retry
+      raise e
+
+      #  end
     end
 
     # Invoke the DELETE method on a resource.
@@ -89,7 +88,7 @@ module CmApi
     #   @param params: Key-value data.
     #   @return: A dictionary of the JSON result.
     def delete(relpath = nil, params = nil)
-      return invoke(:delete, relpath, params)
+      invoke(:delete, relpath, params)
     end
 
     # Invoke the POST method on a resource.
@@ -99,7 +98,7 @@ module CmApi
     #   @param contenttype: Optional.
     #   @return: A dictionary of the JSON result.
     def post(relpath = nil, params = nil, data = nil, contenttype = nil)
-      return invoke(:post, relpath, params, data, _make_headers(contenttype))
+      invoke(:post, relpath, params, data, _make_headers(contenttype))
     end
 
     # Invoke the PUT method on a resource.
@@ -109,7 +108,7 @@ module CmApi
     #   @param contenttype: Optional.
     #   @return: A dictionary of the JSON result.
     def put(relpath = nil, params = nil, data = nil, contenttype = nil)
-      return invoke(:put, relpath, params, data, _make_headers(contenttype))
+      invoke(:put, relpath, params, data, _make_headers(contenttype))
     end
 
     def _make_headers(contenttype = nil)

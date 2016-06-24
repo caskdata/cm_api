@@ -34,8 +34,8 @@ module CmApi
     end
   end
 
-  #TODO: add logger
-  #TODO: use Net::HTTP instead of rest-client
+  # TODO: add logger
+  # TODO: use Net::HTTP instead of rest-client
   # Basic HTTP client tailored for rest APIs.
   class HttpClient
     attr_reader :base_url
@@ -48,7 +48,6 @@ module CmApi
       @base_url = base_url.chomp('/')
       @exc_class = exc_class || RestException
       @headers = {}
-
     end
 
     def _get_headers(headers)
@@ -104,9 +103,7 @@ module CmApi
 
     def _make_url(path, params)
       res = @base_url
-      if path
-        res = ::File.join(res, path.chomp('/')).to_s
-      end
+      res = ::File.join(res, path.chomp('/')).to_s if path
       if params
         param_str = ::URI.encode_www_form(params)
         res += '?' + param_str

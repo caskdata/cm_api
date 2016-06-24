@@ -23,26 +23,25 @@ require_relative 'types'
 module CmApi
   module Endpoints
     module Hosts
-
       include ::CmApi::Endpoints::Types
 
-      HOSTS_PATH = '/hosts'
+      HOSTS_PATH = '/hosts'.freeze
 
       def create_host(resource_root, host_id, name, ipaddr, rack_id = nil)
         apihost = ApiHost.new(resource_root, host_id, name, ipaddr, rack_id)
-        return call(resource_root.method(:post), HOSTS_PATH, ApiHost, true, [apihost])[0]
+        call(resource_root.method(:post), HOSTS_PATH, ApiHost, true, [apihost])[0]
       end
 
       def get_host(resource_root, host_id)
-        return call(resource_root.method(:get), "#{HOSTS_PATH}/#{host_id}", ApiHost)
+        call(resource_root.method(:get), "#{HOSTS_PATH}/#{host_id}", ApiHost)
       end
 
       def get_all_hosts(resource_root, view = nil)
-        return call(resource_root.method(:get), HOSTS_PATH, ApiHost, true, nil, view && { 'view' => view } || nil)
+        call(resource_root.method(:get), HOSTS_PATH, ApiHost, true, nil, view && { 'view' => view } || nil)
       end
 
       def delete_host(resource_root, host_id)
-        return call(resource_root.method(:delete), "#{HOSTS_PATH}/#{host_id}", ApiHost)
+        call(resource_root.method(:delete), "#{HOSTS_PATH}/#{host_id}", ApiHost)
       end
 
       class ApiHost < BaseApiResource
@@ -68,35 +67,34 @@ module CmApi
         }
 
         def initialize(resource_root, hostId = nil, hostname = nil, ipAddress = nil, rackId = nil)
-          super(resource_root, {:hostId => hostId, :hostname => hostname, :ipAddress => ipAddress, :rackId => rackId})
+          super(resource_root, { hostId: hostId, hostname: hostname, ipAddress: ipAddress, rackId: rackId })
         end
 
-        def to_s()
-          return "<ApiHost>: #{@hostId} (#{@ipAddress})"
+        def to_s
+          "<ApiHost>: #{@hostId} (#{@ipAddress})"
         end
 
-        def _path()
-          return "#{HOSTS_PATH}/#{@hostId}"
+        def _path
+          "#{HOSTS_PATH}/#{@hostId}"
         end
 
-        def _put_host()
-          return _put('', ApiHost, false, self)
+        def _put_host
+          _put('', ApiHost, false, self)
         end
 
         def get_config(view = nil)
-          return _get_config('config', view)
+          _get_config('config', view)
         end
 
         def update_config(config)
-          return _update_config('config', config)
+          _update_config('config', config)
         end
 
         def set_rack_id(rackId)
           @rackId = rackId
-          _put_host()
+          _put_host
         end
-
-      end 
+      end
     end
   end
 end
