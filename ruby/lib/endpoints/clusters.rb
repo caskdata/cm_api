@@ -53,7 +53,6 @@ module CmApi
         return call(resource_root.method(:delete), "#{CLUSTERS_PATH}/#{name}", ApiCluster)
       end
 
-      #class ApiCluster < ::CmApi::Endpoints::Types::BaseApiResource
       class ApiCluster < BaseApiResource
         @_ATTRIBUTES = {
           'name' => nil,
@@ -61,8 +60,8 @@ module CmApi
           'clusterUrl' => nil,
           'version' => nil,
           'fullVersion' => nil,
-          'maintenanceMode' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'maintenanceOwners' => ::CmApi::Endpoints::Types::ROAttr.new
+          'maintenanceMode' => ROAttr.new,
+          'maintenanceOwners' => ROAttr.new
         }
 
         def initialize(resource_root, name = nil, version = nil, fullVersion = nil)

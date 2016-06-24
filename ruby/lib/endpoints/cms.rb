@@ -30,9 +30,9 @@ module CmApi
 
       class ApiLicense < BaseApiObject
         @_ATTRIBUTES = {
-          'owner' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'uuid' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'expiration' => ::CmApi::Endpoints::Types::ROAttr.new
+          'owner' => ROAttr.new,
+          'uuid' => ROAttr.new,
+          'expiration' => ROAttr.new
         }
 
         def initialize(resource_root)
@@ -137,5 +137,3 @@ module CmApi
     end
   end
 end
-
-

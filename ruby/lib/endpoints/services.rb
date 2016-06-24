@@ -52,21 +52,21 @@ module CmApi
         return call(resource_root.method(:delete), "%s/%s" % [ (SERVICES_PATH % cluster_name), name ], ApiService)
       end
 
-      class ApiService < ::CmApi::Endpoints::Types::BaseApiResource
+      class ApiService < BaseApiResource
         @_ATTRIBUTES = {
           'name' => nil,
           'type' => nil,
           'displayName' => nil,
-          'serviceState' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'healthSummary' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'healthChecks' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'clusterRef' => ::CmApi::Endpoints::Types::ROAttr.new(::CmApi::Endpoints::Types::ApiClusterRef),
-          'configStale' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'configStalenessStatus' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'clientConfigStalenessStatus' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'serviceUrl' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'maintenanceMode' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'maintenanceOwners' => ::CmApi::Endpoints::Types::ROAttr.new
+          'serviceState' => ROAttr.new,
+          'healthSummary' => ROAttr.new,
+          'healthChecks' => ROAttr.new,
+          'clusterRef' => ROAttr.new(ApiClusterRef),
+          'configStale' => ROAttr.new,
+          'configStalenessStatus' => ROAttr.new,
+          'clientConfigStalenessStatus' => ROAttr.new,
+          'serviceUrl' => ROAttr.new,
+          'maintenanceMode' => ROAttr.new,
+          'maintenanceOwners' => ROAttr.new
         }
 
         def initialize(resource_root, name = nil, type = nil)

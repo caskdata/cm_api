@@ -45,24 +45,24 @@ module CmApi
         return call(resource_root.method(:delete), "#{HOSTS_PATH}/#{host_id}", ApiHost)
       end
 
-      class ApiHost < ::CmApi::Endpoints::Types::BaseApiResource
+      class ApiHost < BaseApiResource
         @_ATTRIBUTES = {
           'hostId' => nil,
           'hostname' => nil,
           'ipAddress' => nil,
           'rackId' => nil,
-          'status' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'lastHeartbeat' => ::CmApi::Endpoints::Types::ROAttr.new(DateTime),
-          'roleRefs' => ::CmApi::Endpoints::Types::ROAttr.new(::CmApi::Endpoints::Types::ApiRoleRef),
-          'healthSummary' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'healthChecks' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'hostUrl' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'commissionState' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'maintenanceMode' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'maintenanceOwners' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'numCores' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'numPhysicalCores' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'totalPhysMemBytes' => ::CmApi::Endpoints::Types::ROAttr.new
+          'status' => ROAttr.new,
+          'lastHeartbeat' => ROAttr.new(DateTime),
+          'roleRefs' => ROAttr.new(ApiRoleRef),
+          'healthSummary' => ROAttr.new,
+          'healthChecks' => ROAttr.new,
+          'hostUrl' => ROAttr.new,
+          'commissionState' => ROAttr.new,
+          'maintenanceMode' => ROAttr.new,
+          'maintenanceOwners' => ROAttr.new,
+          'numCores' => ROAttr.new,
+          'numPhysicalCores' => ROAttr.new,
+          'totalPhysMemBytes' => ROAttr.new
         }
 
         def initialize(resource_root, hostId = nil, hostname = nil, ipAddress = nil, rackId = nil)

@@ -146,6 +146,8 @@ module CmApi
       end
 
       class BaseApiObject
+        include ::CmApi::Endpoints::Types
+
         # @_ATTRIBUTES is not inherited by subclasses, but rather initialized in the constructor below
         @_ATTRIBUTES = {}
         # @@_WHITELIST is a global, shared among all subclasses. It should not be modified.
@@ -440,20 +442,20 @@ module CmApi
           unless self.class.instance_variable_get(:@_ATTRIBUTES) &&
                    !self.class.instance_variable_get(:@_ATTRIBUTES).empty?
             _attributes = {
-              'id'            => ::CmApi::Endpoints::Types::ROAttr.new,
-              'name'          => ::CmApi::Endpoints::Types::ROAttr.new,
-              'startTime'     => ::CmApi::Endpoints::Types::ROAttr.new(DateTime),
-              'endTime'       => ::CmApi::Endpoints::Types::ROAttr.new(DateTime),
-              'active'        => ::CmApi::Endpoints::Types::ROAttr.new,
-              'success'       => ::CmApi::Endpoints::Types::ROAttr.new,
-              'resultMessage' => ::CmApi::Endpoints::Types::ROAttr.new,
-              'clusterRef'    => ::CmApi::Endpoints::Types::ROAttr.new(ApiClusterRef),
-              'serviceRef'    => ::CmApi::Endpoints::Types::ROAttr.new(ApiServiceRef),
-              'roleRef'       => ::CmApi::Endpoints::Types::ROAttr.new(ApiRoleRef),
-              'hostRef'       => ::CmApi::Endpoints::Types::ROAttr.new(ApiHostRef),
-              'children'      => ::CmApi::Endpoints::Types::ROAttr.new(ApiCommand, false),
-              'parent'        => ::CmApi::Endpoints::Types::ROAttr.new(ApiCommand),
-              'resultDataUrl' => ::CmApi::Endpoints::Types::ROAttr.new
+              'id'            => ROAttr.new,
+              'name'          => ROAttr.new,
+              'startTime'     => ROAttr.new(DateTime),
+              'endTime'       => ROAttr.new(DateTime),
+              'active'        => ROAttr.new,
+              'success'       => ROAttr.new,
+              'resultMessage' => ROAttr.new,
+              'clusterRef'    => ROAttr.new(ApiClusterRef),
+              'serviceRef'    => ROAttr.new(ApiServiceRef),
+              'roleRef'       => ROAttr.new(ApiRoleRef),
+              'hostRef'       => ROAttr.new(ApiHostRef),
+              'children'      => ROAttr.new(ApiCommand, true),
+              'parent'        => ROAttr.new(ApiCommand),
+              'resultDataUrl' => ROAttr.new
             }
             self.class.instance_variable_set(:@_ATTRIBUTES, _attributes)
           end
@@ -522,18 +524,17 @@ module CmApi
       #
       # Configuration helpers.
       #
-
       class ApiConfig < BaseApiObject
         @_ATTRIBUTES = {
           'name' => nil,
           'value' => nil,
-          'required' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'default' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'displayName' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'description' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'relatedName' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'validationState' => ::CmApi::Endpoints::Types::ROAttr.new,
-          'validationMessage' => ::CmApi::Endpoints::Types::ROAttr.new
+          'required' => ROAttr.new,
+          'default' => ROAttr.new,
+          'displayName' => ROAttr.new,
+          'description' => ROAttr.new,
+          'relatedName' => ROAttr.new,
+          'validationState' => ROAttr.new,
+          'validationMessage' => ROAttr.new
         }
 
         def initialize(resource_root, name = nil, value = nil)
