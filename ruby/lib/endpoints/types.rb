@@ -93,7 +93,7 @@ module CmApi
             first = data['items'][0]
             return json_to_config(data, first.length == 2)
           elsif @_is_api_list
-            return ApiList.from_json_dict(self.class, data, resource_root, @_atype)
+            return ApiList.from_json_dict(data, resource_root, @_atype)
           elsif data.is_a?(Array)
             res = []
             data.each do |x|
