@@ -39,8 +39,8 @@ module CmApi
         # See if the body is json
         json_body = JSON.parse(@message)
         @message = json_body['message']
-      rescue
-        # ignore json parsing error
+      rescue JSON::ParserError
+        return
       end
     end
   end
@@ -67,7 +67,7 @@ module CmApi
       server_port = use_tls ? 7183 : 7180 if server_port.nil?
       base_url = "#{protocol}://#{server_host}:#{server_port}/api/v#{version}"
 
-      client = HttpClient.new(base_url, exc_class = ApiException)
+      client = HttpClient.new(base_url, ApiException)
       client.set_basic_auth(username, password, API_AUTH_REALM)
       client.headers = { :'content-type' => 'application/json' }
       super(client)

@@ -29,8 +29,7 @@ module CmApi
       @code = nil
       @message = error.to_s
 
-      @code = error.code
-    rescue NoMethodError
+      @code = error.code if error.respond_to?(:code)
     end
   end
 
