@@ -76,21 +76,22 @@ describe CmApi::Endpoints::Types::BaseApiObject do
     JSON
 
     obj = deserialize(json, Parent)
+
     expect(obj.child).to be_an_instance_of Child
-    expect(obj.child.value) == 'string1'
+    expect(obj.child.value).to eq 'string1'
     expect(obj.children).to be_an_instance_of Array
-    expect(obj.children.length) == 2
-    expect(obj.children[0]) == 1
-    expect(obj.children[1]) == '2'
+    expect(obj.children.length).to eq 2
+    expect(obj.children[0].value).to eq 1
+    expect(obj.children[1].value).to eq '2'
     expect(obj.date).to be_an_instance_of DateTime
-    expect(obj.date.year) == 2013
-    expect(obj.date.month) == 2
-    expect(obj.date.day) == 12
-    expect(obj.date.hour) == 12
-    expect(obj.date.minute) == 17
-    expect(obj.date.second) == 15
-    expect(obj.date.sec_fraction.to_f) == 0.831765
-    expect(obj.readOnly) == true
+    expect(obj.date.year).to eq 2013
+    expect(obj.date.month).to eq 2
+    expect(obj.date.day).to eq 12
+    expect(obj.date.hour).to eq 12
+    expect(obj.date.minute).to eq 17
+    expect(obj.date.second).to eq 15
+    expect(obj.date.sec_fraction.to_f).to eq 0.831765
+    expect(obj.readOnly).to eq true
 
     json = <<-JSON
       {
@@ -103,8 +104,8 @@ describe CmApi::Endpoints::Types::BaseApiObject do
 
   it 'initializes correctly' do
     obj = Parent.new(nil)
-    expect obj.instance_variable_defined?('@child') == true
-    expect obj.instance_variable_defined?('@readOnly') == true
+    expect(obj.instance_variable_defined?('@child')).to eq true
+    expect(obj.instance_variable_defined?('@readOnly')).to eq true
 
     obj = Parent.new(nil, 'date' => DateTime.now)
     expect(obj.date).to be_an_instance_of DateTime
@@ -116,7 +117,7 @@ describe CmApi::Endpoints::Types::BaseApiObject do
     dummy = Dummy.new(nil)
     dummy.foo = 'foo'
     json = dummy.to_json_dict
-    expect(json['foo']) == 'foo'
-    expect(json.key?('bar')) == false
+    expect(json['foo']).to eq 'foo'
+    expect(json.key?('bar')).to eq false
   end
 end
