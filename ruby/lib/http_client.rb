@@ -97,7 +97,7 @@ module CmApi
         ::RestClient::Request.execute(rest_client_args)
       rescue => e
         puts e.inspect
-        raise @exc_class.new(e)
+        raise @exc_class, e
       end
     end
 
