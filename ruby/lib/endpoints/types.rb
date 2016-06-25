@@ -302,7 +302,6 @@ module CmApi
         end
       end
 
-
       # A specialization of BaseApiObject that provides some utility methods for
       # resources. This class allows easier serialization / deserialization of
       # parameters and return values.
@@ -560,8 +559,8 @@ module CmApi
 
             if !deadline.nil?
               now = Time.now()
-               return cmd if deadline < now
-               sleep([sleep_sec, deadline - now].min)
+              return cmd if deadline < now
+              sleep([sleep_sec, deadline - now].min)
             else
               sleep(sleep_sec)
             end
