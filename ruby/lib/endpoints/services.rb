@@ -22,6 +22,7 @@ require_relative 'types'
 
 module CmApi
   module Endpoints
+    # Module for services-related methods and types
     module Services
       include ::CmApi::Endpoints::Types
       # include ::CmApi::Endpoints::Roles
@@ -32,11 +33,11 @@ module CmApi
 
       def create_service(name, service_type, cluster_name = 'default')
         apiservice = ApiService.new(self, name, service_type)
-        call(method(:post), SERVICES_PATH % [cluster_name], ApiService, true, [apiservice])[0]
+        call(method(:post), format(SERVICES_PATH, cluster_name), ApiService, true, [apiservice])[0]
       end
 
       def get_service(name, cluster_name = 'default')
-        _get_service(self, '%s/%s' % [(SERVICES_PATH % cluster_name), name])
+        _get_service(self, format('%s/%s', format(SERVICES_PATH, cluster_name), name))
       end
 
       def _get_service(path)
@@ -44,13 +45,14 @@ module CmApi
       end
 
       def get_all_services(cluster_name = 'default', view = nil)
-        call(method(:get), SERVICES_PATH % [cluster_name], ApiService, true, nil, view && { 'view' => view } || nil)
+        call(method(:get), format(SERVICES_PATH, cluster_name), ApiService, true, nil, view && { 'view' => view } || nil)
       end
 
       def delete_service(name, cluster_name = 'default')
-        call(method(:delete), '%s/%s' % [(SERVICES_PATH % cluster_name), name], ApiService)
+        call(method(:delete), format('%s/%s', format(SERVICES_PATH, cluster_name), name), ApiService)
       end
 
+      # Model for a service
       class ApiService < BaseApiResource
         @_ATTRIBUTES = {
           'name' => nil,
@@ -87,7 +89,7 @@ module CmApi
         def _path
           # This method assumes that lack of a cluster reference means that the
           # object refers to the Cloudera Management Services instance.
-          return SERVICE_PATH % [_get_cluster_name, @name] if _get_cluster_name
+          return format(SERVICE_PATH, _get_cluster_name, @name) if _get_cluster_name
           '/cm/service'
         end
 

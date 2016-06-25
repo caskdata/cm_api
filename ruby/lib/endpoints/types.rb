@@ -43,7 +43,11 @@ end
 
 module CmApi
   module Endpoints
+    # Module for common types
     module Types
+      # Encapsulates information about an attribute in the JSON encoding of the
+      # object. It identifies properties of the attribute such as whether it's
+      # read-only, its type, etc.
       class Attr
         DATE_TO_FMT = '%Y-%m-%dT%H:%M:%S.%6NZ'.freeze
         # Ruby's strptime doesn't support %6N microseconds. When deserializing we store 9 digits instead
@@ -55,7 +59,15 @@ module CmApi
           @rw = rw
         end
 
-        # Renamed from Cloudera's "to_json" to not conflict with json gem
+        # Ruby port note: Renamed from Cloudera's "to_json" to not conflict with json gem
+        # Returns the JSON encoding of the given attribute value.
+
+        # If the value has a 'to_json_dict' object, that method is called. Otherwise,
+        # the following values are returned for each input type:
+        #  - datetime.datetime: string with the API representation of a date.
+        #  - dictionary: if 'atype' is ApiConfig, a list of ApiConfig objects.
+        #  - python list: python list (or ApiList) with JSON encoding of items
+        #  - the raw value otherwise
         def attr_to_json(value, preserve_ro)
           if value.respond_to? 'to_json_dict'
             return value.to_json_dict(preserve_ro)
@@ -64,21 +76,28 @@ module CmApi
           elsif value.is_a?(DateTime)
             return value.strftime(DATE_TO_FMT)
           elsif value.is_a?(Array) # TODO: any difference from python Tuple?
-            if @_is_api_list
-              return ApiList.new(value).to_json_dict
-            else
-              res = []
-              value.each do |x|
-                res << attr_to_json(x, preserve_ro)
-              end
-              return res
+            return ApiList.new(value).to_json_dict if @_is_api_list
+            res = []
+            value.each do |x|
+              res << attr_to_json(x, preserve_ro)
             end
+            return res
           else
             return value
           end
         end
 
-        # Renamed from Cloudera's "from_json" for consistency with attr_to_json
+        # Ruby port note: Renamed from Cloudera's "from_json" for consistency with attr_to_json
+        # Parses the given JSON value into an appropriate python object.
+
+        # This means:
+        # - a datetime.datetime if 'atype' is datetime.datetime
+        # - a converted config dictionary or config list if 'atype' is ApiConfig
+        # - if the attr is an API list, an ApiList with instances of 'atype'
+        # - an instance of 'atype' if it has a 'from_json_dict' method
+        # - a python list with decoded versions of the member objects if the input
+        #   is a python list.
+        # - the raw value otherwise
         def attr_from_json(resource_root, data)
           return nil if data.nil?
 
@@ -105,18 +124,32 @@ module CmApi
         end
       end
 
+      # Subclass that just defines the attribute as read-only.
       class ROAttr < Attr
         def initialize(atype = nil, is_api_list = false)
           super(atype, false, is_api_list)
         end
       end
 
+      # Checks if the resource_root's API version it at least the given minimum
+      # version.
       def check_api_version(resource_root, min_version)
         if resource_root.version < min_version
           raise "Api version #{min_version} is required but #{resource_root.version} is in use."
         end
       end
 
+      # Generic function for calling a resource method and automatically dealing with
+      # serialization of parameters and deserialization of return values.
+
+      # @param method: method to call (must be bound to a resource;
+      #                e.g., "resource_root.get").
+      # @param path: the full path of the API method to call.
+      # @param ret_type: return type of the call.
+      # @param ret_is_list: whether the return type is an ApiList.
+      # @param data: Optional data to send as payload to the call.
+      # @param params: Optional query parameters for the call.
+      # @param api_version: minimum API version for the call.
       def call(method, path, ret_type, ret_is_list = false, data = nil, params = nil, api_version = 1)
         check_api_version(method.receiver, api_version)
         if !data.nil?
@@ -126,9 +159,8 @@ module CmApi
           ret = method.call(path, params)
         end
 
-        if ret_type.nil?
-          return
-        elsif ret_is_list
+        return if ret_type.nil?
+        if ret_is_list
           return ApiList.from_json_dict(ret, method.receiver, ret_type)
         elsif ret.is_a?(Array)
           res = []
@@ -141,6 +173,19 @@ module CmApi
         end
       end
 
+      # The BaseApiObject helps with (de)serialization from/to JSON.
+
+      # The derived class has two ways of defining custom attributes:
+      #  - Overwriting the '_ATTRIBUTES' field with the attribute dictionary
+      #  - Override the _get_attributes() method, in case static initialization of
+      #    the above field is not possible.
+
+      # It's recommended that the _get_attributes() implementation do caching to
+      # avoid computing the dictionary on every invocation.
+
+      # All constructor arguments (aside from self and resource_root) must
+      # be keywords arguments with default values (typically nil), or
+      # from_json_dict() will not work.
       class BaseApiObject
         include ::CmApi::Endpoints::Types
 
@@ -151,10 +196,23 @@ module CmApi
 
         attr_reader :_resource_root
 
+        # Returns a map of property names to attr instances (or nil for default
+        # attribute behavior) describing the properties of the object.
+
+        # By default, this method will return the class's _ATTRIBUTES field.
+        # Classes can override this method to do custom initialization of the
+        # attributes when needed.
         def _get_attributes
           self.class.instance_variable_get(:@_ATTRIBUTES)
         end
 
+        # Initializes internal state and sets all known writable properties of the
+        # object to None. Then initializes the properties given in the provided
+        # attributes dictionary.
+
+        # @param resource_root: API resource object.
+        # @param args: optional dictionary of attributes to set. This should only
+        #               contain r/w attributes.
         def initialize(resource_root, args = nil)
           args.reject! { |x, _v| [:resource_root, :self].include? x } if args
 
@@ -173,6 +231,9 @@ module CmApi
         end
 
         # TODO: functions should be converted to hash arguments, as they are often called using named parameters in python
+        # Sets all the attributes in the dictionary. Optionally, allows setting
+        # read-only attributes (e.g. when deserializing from JSON) and skipping
+        # JSON deserialization of values.
         def _set_attrs(attrs, allow_ro = false, from_json = true)
           attrs.each do |k, v|
             attr = _check_attr(k.to_s, allow_ro)
@@ -241,15 +302,25 @@ module CmApi
         end
       end
 
+
+      # A specialization of BaseApiObject that provides some utility methods for
+      # resources. This class allows easier serialization / deserialization of
+      # parameters and return values.
       class BaseApiResource < BaseApiObject
+        # Returns the minimum API version for this resource. Defaults to 1.
         def _api_version
           1
         end
 
+        # Returns the path to the resource.
+
+        # e.g., for a service 'foo' in cluster 'bar', this should return
+        # '/clusters/bar/services/foo'.
         def _path
           raise NotImplementedError
         end
 
+        # Raise an exception if the version of the api is less than the given version.
         def _require_min_api_version(version)
           actual_version = @_resource_root.version
           version = [version, _api_version].max
@@ -258,10 +329,13 @@ module CmApi
           end
         end
 
+        # Invokes a command on the resource. Commands are expected to be under the
+        # "commands/" sub-resource.
         def _cmd(command, data = nil, params = nil, api_version = 1)
           _post('commands/' + command, ApiCommand, false, data, params, api_version)
         end
 
+        # Retrieves an ApiConfig list from the given relative path.
         def _get_config(rel_path, view, api_version = 1)
           _require_min_api_version(api_version)
           params = view && { 'view' => view } || nil
@@ -298,6 +372,7 @@ module CmApi
         end
       end
 
+      # A list of some api object
       class ApiList < BaseApiObject
         LIST_KEY = 'items'.freeze
 
@@ -359,6 +434,7 @@ module CmApi
         end
       end
 
+      # Model for a host reference
       class ApiHostRef < BaseApiObject
         @_ATTRIBUTES = {
           'hostId' => nil
@@ -375,6 +451,7 @@ module CmApi
         end
       end
 
+      # Model for a service reference
       class ApiServiceRef < BaseApiObject
         @_ATTRIBUTES = {
           'clusterName' => nil,
@@ -387,6 +464,7 @@ module CmApi
         end
       end
 
+      # Model for a cluster reference
       class ApiClusterRef < BaseApiObject
         @_ATTRIBUTES = {
           'clusterName' => nil
@@ -397,6 +475,7 @@ module CmApi
         end
       end
 
+      # Model for a role reference
       class ApiRoleRef < BaseApiObject
         @_ATTRIBUTES = {
           'clusterName' => nil,
@@ -409,6 +488,7 @@ module CmApi
         end
       end
 
+      # Model for a role config group reference
       class ApiRoleConfigGroupRef < BaseApiObject
         @_ATTRIBUTES = {
           'roleConfigGroupName' => nil
@@ -419,13 +499,14 @@ module CmApi
         end
       end
 
+      # Model for a command
       class ApiCommand < BaseApiObject
         SYNCHRONOUS_COMMAND_ID = -1
 
         def _get_attributes
           unless self.class.instance_variable_get(:@_ATTRIBUTES) &&
                  !self.class.instance_variable_get(:@_ATTRIBUTES).empty?
-            _attributes = {
+            attributes = {
               'id'            => ROAttr.new,
               'name'          => ROAttr.new,
               'startTime'     => ROAttr.new(DateTime),
@@ -442,7 +523,7 @@ module CmApi
               'resultDataUrl' => ROAttr.new,
               'canRetry'      => ROAttr.new
             }
-            self.class.instance_variable_set(:@_ATTRIBUTES, _attributes)
+            self.class.instance_variable_set(:@_ATTRIBUTES, attributes)
           end
           self.class.instance_variable_get(:@_ATTRIBUTES)
         end
@@ -479,11 +560,8 @@ module CmApi
 
             if !deadline.nil?
               now = Time.now()
-              if deadline < now
-                return cmd
-              else
-                sleep([sleep_sec, deadline - now].min)
-              end
+               return cmd if deadline < now
+               sleep([sleep_sec, deadline - now].min)
             else
               sleep(sleep_sec)
             end

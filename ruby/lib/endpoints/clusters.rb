@@ -20,6 +20,7 @@ require_relative 'types'
 
 module CmApi
   module Endpoints
+    # Module for Cluster methods and types
     module Clusters
       include ::CmApi::Endpoints::Types
 
@@ -52,6 +53,7 @@ module CmApi
         call(method(:delete), "#{CLUSTERS_PATH}/#{name}", ApiCluster)
       end
 
+      # Model for a cluster
       class ApiCluster < BaseApiResource
         @_ATTRIBUTES = {
           'name' => nil,

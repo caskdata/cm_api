@@ -22,6 +22,7 @@ require_relative 'types'
 
 module CmApi
   module Endpoints
+    # Module for host method and types
     module Hosts
       include ::CmApi::Endpoints::Types
 
@@ -44,6 +45,7 @@ module CmApi
         call(method(:delete), "#{HOSTS_PATH}/#{host_id}", ApiHost)
       end
 
+      # Model for a host
       class ApiHost < BaseApiResource
         @_ATTRIBUTES = {
           'hostId' => nil,
@@ -90,8 +92,8 @@ module CmApi
           _update_config('config', config)
         end
 
-        def set_rack_id(rackId)
-          @rackId = rackId
+        def set_rack_id(rack_id)
+          @rackId = rack_id
           _put_host
         end
       end

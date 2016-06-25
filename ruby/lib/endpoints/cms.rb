@@ -23,10 +23,12 @@ require_relative 'services'
 
 module CmApi
   module Endpoints
+    # Module for Cloudera Management Service methods and types
     module Cms
       include ::CmApi::Endpoints::Types
       include ::CmApi::Endpoints::Services
 
+      # Model for a CM license
       class ApiLicense < BaseApiObject
         @_ATTRIBUTES = {
           'owner' => ROAttr.new,
@@ -39,6 +41,7 @@ module CmApi
         end
       end
 
+      # The Cloudera Manager instance. Provides access to CM configuration and services
       class ClouderaManager < BaseApiResource
         def initialize(resource_root)
           super(resource_root)
