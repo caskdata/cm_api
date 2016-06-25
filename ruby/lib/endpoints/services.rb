@@ -30,25 +30,25 @@ module CmApi
       SERVICE_PATH = '/clusters/%s/services/%s'.freeze
       ROLETYPES_CFG_KEY = 'roleTypeConfigs'.freeze
 
-      def create_service(resource_root, name, service_type, cluster_name = 'default')
-        apiservice = ApiService.new(resource_root, name, service_type)
-        call(resource_root.method(:post), SERVICES_PATH % [cluster_name], ApiService, true, [apiservice])[0]
+      def create_service(name, service_type, cluster_name = 'default')
+        apiservice = ApiService.new(self, name, service_type)
+        call(self.method(:post), SERVICES_PATH % [cluster_name], ApiService, true, [apiservice])[0]
       end
 
-      def get_service(resource_root, name, cluster_name = 'default')
-        _get_service(resource_root, '%s/%s' % [(SERVICES_PATH % cluster_name), name])
+      def get_service(name, cluster_name = 'default')
+        _get_service(self, '%s/%s' % [(SERVICES_PATH % cluster_name), name])
       end
 
-      def _get_service(resource_root, path)
-        call(resource_root.method(:get), path, ApiService)
+      def _get_service(path)
+        call(self.method(:get), path, ApiService)
       end
 
-      def get_all_services(resource_root, cluster_name = 'default', view = nil)
-        call(resource_root.method(:get), SERVICES_PATH % [cluster_name], ApiService, true, nil, view && { 'view' => view } || nil)
+      def get_all_services(cluster_name = 'default', view = nil)
+        call(self.method(:get), SERVICES_PATH % [cluster_name], ApiService, true, nil, view && { 'view' => view } || nil)
       end
 
-      def delete_service(resource_root, name, cluster_name = 'default')
-        call(resource_root.method(:delete), '%s/%s' % [(SERVICES_PATH % cluster_name), name], ApiService)
+      def delete_service(name, cluster_name = 'default')
+        call(self.method(:delete), '%s/%s' % [(SERVICES_PATH % cluster_name), name], ApiService)
       end
 
       class ApiService < BaseApiResource

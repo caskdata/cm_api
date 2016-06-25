@@ -25,7 +25,7 @@ module CmApi
 
       CLUSTERS_PATH = '/clusters'.freeze
 
-      def create_cluster(resource_root, name, version = nil, fullVersion = nil)
+      def create_cluster(name, version = nil, fullVersion = nil)
         if version.nil? && fullVersion.nil?
           raise "Either 'version' or 'fullVersion' must be specified"
         end
@@ -36,20 +36,20 @@ module CmApi
           api_version = 1
         end
 
-        apicluster = ApiCluster.new(resource_root, name, version, fullVersion)
-        call(resource_root.method(:post), CLUSTERS_PATH, ApiCluster, true, [apicluster], nil, api_version)[0]
+        apicluster = ApiCluster.new(self, name, version, fullVersion)
+        call(self.method(:post), CLUSTERS_PATH, ApiCluster, true, [apicluster], nil, api_version)[0]
       end
 
-      def get_cluster(resource_root, name)
-        call(resource_root.method(:get), "#{CLUSTERS_PATH}/#{name}", ApiCluster)
+      def get_cluster(name)
+        call(self.method(:get), "#{CLUSTERS_PATH}/#{name}", ApiCluster)
       end
 
-      def get_all_clusters(resource_root = self, view = nil)
-        call(resource_root.method(:get), CLUSTERS_PATH, ApiCluster, true, nil, view && { 'view' => view } || nil)
+      def get_all_clusters(view = nil)
+        call(self.method(:get), CLUSTERS_PATH, ApiCluster, true, nil, view && { 'view' => view } || nil)
       end
 
-      def delete_cluster(resource_root, name)
-        call(resource_root.method(:delete), "#{CLUSTERS_PATH}/#{name}", ApiCluster)
+      def delete_cluster(name)
+        call(self.method(:delete), "#{CLUSTERS_PATH}/#{name}", ApiCluster)
       end
 
       class ApiCluster < BaseApiResource

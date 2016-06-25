@@ -27,21 +27,21 @@ module CmApi
 
       HOSTS_PATH = '/hosts'.freeze
 
-      def create_host(resource_root, host_id, name, ipaddr, rack_id = nil)
-        apihost = ApiHost.new(resource_root, host_id, name, ipaddr, rack_id)
-        call(resource_root.method(:post), HOSTS_PATH, ApiHost, true, [apihost])[0]
+      def create_host(host_id, name, ipaddr, rack_id = nil)
+        apihost = ApiHost.new(self, host_id, name, ipaddr, rack_id)
+        call(self.method(:post), HOSTS_PATH, ApiHost, true, [apihost])[0]
       end
 
-      def get_host(resource_root, host_id)
-        call(resource_root.method(:get), "#{HOSTS_PATH}/#{host_id}", ApiHost)
+      def get_host(host_id)
+        call(self.method(:get), "#{HOSTS_PATH}/#{host_id}", ApiHost)
       end
 
-      def get_all_hosts(resource_root, view = nil)
-        call(resource_root.method(:get), HOSTS_PATH, ApiHost, true, nil, view && { 'view' => view } || nil)
+      def get_all_hosts(view = nil)
+        call(self.method(:get), HOSTS_PATH, ApiHost, true, nil, view && { 'view' => view } || nil)
       end
 
-      def delete_host(resource_root, host_id)
-        call(resource_root.method(:delete), "#{HOSTS_PATH}/#{host_id}", ApiHost)
+      def delete_host(host_id)
+        call(self.method(:delete), "#{HOSTS_PATH}/#{host_id}", ApiHost)
       end
 
       class ApiHost < BaseApiResource
