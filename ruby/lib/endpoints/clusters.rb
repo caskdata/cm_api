@@ -37,19 +37,19 @@ module CmApi
         end
 
         apicluster = ApiCluster.new(self, name, version, fullVersion)
-        call(self.method(:post), CLUSTERS_PATH, ApiCluster, true, [apicluster], nil, api_version)[0]
+        call(method(:post), CLUSTERS_PATH, ApiCluster, true, [apicluster], nil, api_version)[0]
       end
 
       def get_cluster(name)
-        call(self.method(:get), "#{CLUSTERS_PATH}/#{name}", ApiCluster)
+        call(method(:get), "#{CLUSTERS_PATH}/#{name}", ApiCluster)
       end
 
       def get_all_clusters(view = nil)
-        call(self.method(:get), CLUSTERS_PATH, ApiCluster, true, nil, view && { 'view' => view } || nil)
+        call(method(:get), CLUSTERS_PATH, ApiCluster, true, nil, view && { 'view' => view } || nil)
       end
 
       def delete_cluster(name)
-        call(self.method(:delete), "#{CLUSTERS_PATH}/#{name}", ApiCluster)
+        call(method(:delete), "#{CLUSTERS_PATH}/#{name}", ApiCluster)
       end
 
       class ApiCluster < BaseApiResource

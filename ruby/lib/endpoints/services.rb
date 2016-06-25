@@ -32,7 +32,7 @@ module CmApi
 
       def create_service(name, service_type, cluster_name = 'default')
         apiservice = ApiService.new(self, name, service_type)
-        call(self.method(:post), SERVICES_PATH % [cluster_name], ApiService, true, [apiservice])[0]
+        call(method(:post), SERVICES_PATH % [cluster_name], ApiService, true, [apiservice])[0]
       end
 
       def get_service(name, cluster_name = 'default')
@@ -40,15 +40,15 @@ module CmApi
       end
 
       def _get_service(path)
-        call(self.method(:get), path, ApiService)
+        call(method(:get), path, ApiService)
       end
 
       def get_all_services(cluster_name = 'default', view = nil)
-        call(self.method(:get), SERVICES_PATH % [cluster_name], ApiService, true, nil, view && { 'view' => view } || nil)
+        call(method(:get), SERVICES_PATH % [cluster_name], ApiService, true, nil, view && { 'view' => view } || nil)
       end
 
       def delete_service(name, cluster_name = 'default')
-        call(self.method(:delete), '%s/%s' % [(SERVICES_PATH % cluster_name), name], ApiService)
+        call(method(:delete), '%s/%s' % [(SERVICES_PATH % cluster_name), name], ApiService)
       end
 
       class ApiService < BaseApiResource
