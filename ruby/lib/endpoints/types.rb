@@ -19,7 +19,7 @@
 require 'json'
 require 'date'
 
-# Custom attr_accessor to run _check_attr before setting any attribute
+# Ruby port note: Custom attr_accessor to run _check_attr before setting any attribute
 # This replaces the __setattr__ override in the Python version
 class Class
   def attr_writer_with_validation(*args)
@@ -59,7 +59,7 @@ module CmApi
           @rw = rw
         end
 
-        # Ruby port note: Renamed from Cloudera's "to_json" to not conflict with json gem
+        # Ruby port note: Renamed from the python version's "to_json" to not conflict with json gem
         # Returns the JSON encoding of the given attribute value.
 
         # If the value has a 'to_json_dict' object, that method is called. Otherwise,
@@ -87,7 +87,7 @@ module CmApi
           end
         end
 
-        # Ruby port note: Renamed from Cloudera's "from_json" for consistency with attr_to_json
+        # Ruby port note: Renamed from the python version's "from_json" for consistency with attr_to_json
         # Parses the given JSON value into an appropriate python object.
 
         # This means:
@@ -141,6 +141,7 @@ module CmApi
 
       # Generic function for calling a resource method and automatically dealing with
       # serialization of parameters and deserialization of return values.
+      # Ruby Port note: renamed from the Python version's "call" to not conflict with Proc#call
 
       # @param method: method to call (must be bound to a resource;
       #                e.g., "resource_root.get").
@@ -440,8 +441,9 @@ module CmApi
         }
 
         def initialize(resource_root, hostId = nil)
-          # possible alternative to generate the hash argument dynamically, similar to python locals():
-          #  method(__method__).parameters.map { |arg| arg[1] }.inject({}) { |h, a| h[a] = eval a.to_s; h}
+          # Ruby port note: must call super with a hash argument of all local variable names/values.
+          # Possible alternative to generate this hash argument dynamically, similar to python locals():
+          # method(__method__).parameters.map { |arg| arg[1] }.inject({}) { |h, a| h[a] = eval a.to_s; h}
           super(resource_root, { hostId: hostId })
         end
 
