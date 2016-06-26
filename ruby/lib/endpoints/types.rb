@@ -150,7 +150,7 @@ module CmApi
       # @param data: Optional data to send as payload to the call.
       # @param params: Optional query parameters for the call.
       # @param api_version: minimum API version for the call.
-      def call(method, path, ret_type, ret_is_list = false, data = nil, params = nil, api_version = 1)
+      def call_resource(method, path, ret_type, ret_is_list = false, data = nil, params = nil, api_version = 1)
         check_api_version(method.receiver, api_version)
         if !data.nil?
           data = Attr.new(nil, true, true).attr_to_json(data, false).to_json
@@ -367,7 +367,7 @@ module CmApi
         def _call(method_name, rel_path, ret_type, ret_is_list = false, data = nil, params = nil, api_version = 1)
           path = _path
           path += '/' + rel_path if rel_path
-          call(@_resource_root.method(method_name), path, ret_type, ret_is_list, data, params, api_version)
+          call_resource(@_resource_root.method(method_name), path, ret_type, ret_is_list, data, params, api_version)
         end
       end
 

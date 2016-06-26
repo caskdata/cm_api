@@ -30,19 +30,19 @@ module CmApi
 
       def create_host(host_id, name, ipaddr, rack_id = nil)
         apihost = ApiHost.new(self, host_id, name, ipaddr, rack_id)
-        call(method(:post), HOSTS_PATH, ApiHost, true, [apihost])[0]
+        call_resource(method(:post), HOSTS_PATH, ApiHost, true, [apihost])[0]
       end
 
       def get_host(host_id)
-        call(method(:get), "#{HOSTS_PATH}/#{host_id}", ApiHost)
+        call_resource(method(:get), "#{HOSTS_PATH}/#{host_id}", ApiHost)
       end
 
       def get_all_hosts(view = nil)
-        call(method(:get), HOSTS_PATH, ApiHost, true, nil, view && { 'view' => view } || nil)
+        call_resource(method(:get), HOSTS_PATH, ApiHost, true, nil, view && { 'view' => view } || nil)
       end
 
       def delete_host(host_id)
-        call(method(:delete), "#{HOSTS_PATH}/#{host_id}", ApiHost)
+        call_resource(method(:delete), "#{HOSTS_PATH}/#{host_id}", ApiHost)
       end
 
       # Model for a host
