@@ -290,7 +290,7 @@ module CmApi
           dic
         end
 
-        def to_str
+        def to_s
           name = _get_attributes.keys[0]
           value = instance_variable_get("@#{name}") || nil
           "#{self.class.name}: #{name} = #{value}"
@@ -381,8 +381,8 @@ module CmApi
           instance_variable_set('@objects', objects)
         end
 
-        def to_str
-          "<ApiList>(#{@objects.length}): [#{@objects.map(&:to_str).join(', ')}]"
+        def to_s
+          "<ApiList>(#{@objects.length}): [#{@objects.map(&:to_s).join(', ')}]"
         end
 
         def to_json_dict(preserve_ro = false)
@@ -447,7 +447,7 @@ module CmApi
           super(resource_root, { hostId: hostId })
         end
 
-        def to_str
+        def to_s
           "<ApiHostRef>: #{@hostId}"
         end
       end
@@ -529,7 +529,7 @@ module CmApi
           self.class.instance_variable_get(:@_ATTRIBUTES)
         end
 
-        def to_str
+        def to_s
           "<ApiCommand>: '#{@name}' (id: #{@id}; active: #{@active}; success: #{@success}"
         end
 
@@ -599,7 +599,7 @@ module CmApi
           super(resource_root, { name: name, value: value })
         end
 
-        def to_str
+        def to_s
           "<ApiConfig>: #{@name} = #{@value}"
         end
       end
