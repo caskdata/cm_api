@@ -69,13 +69,13 @@ module CmApi
     #   @param params: Key-value parameter data.
     #   @param data: The data to attach to the body of the request.
     #   @param headers: The headers to set for this request.
-    #   @return: HTTP respons
+    #   @return: HTTP response
     def execute(http_method, path, params = nil, data = nil, headers = nil)
       # Prepare URL and params
       url = _make_url(path, params)
       if [:get, :delete].include? http_method
         unless data.nil?
-          puts "WARNING: GET method does not pass any data. Path '#{path}'"
+          puts "WARNING: #{http_method.to_s.upcase} method does not pass any data. Path '#{path}'"
           data = nil
         end
       end
