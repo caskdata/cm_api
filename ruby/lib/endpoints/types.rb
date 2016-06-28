@@ -609,11 +609,11 @@ module CmApi
         dic.each do |k, v|
           config << { 'name' => k, 'value' => v }
         end
-        { ApiList.LIST_KEY => config }
+        { ApiList::LIST_KEY => config }
       end
 
-      def config_to_json(_dic)
-        config_to_api_list.to_json
+      def config_to_json(dic)
+        config_to_api_list(dic).to_json
       end
 
       def json_to_config(dic, full = false)
