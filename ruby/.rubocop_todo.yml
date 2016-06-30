@@ -61,7 +61,6 @@ Style/GuardClause:
     - 'lib/endpoints/services.rb'
     - 'lib/endpoints/types.rb'
 
-
 # Offense count: 1
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.
