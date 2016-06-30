@@ -40,11 +40,22 @@ module CmApi
         format('%s/%s', path, role_name)
       end
 
+      # Create a role
+      # @param service_name: Service name
+      # @param role_type: Role type
+      # @param role_name: Role name
+      # @param cluster_name: Cluster name
+      # @return: An ApiRole object
       def create_role(service_name, role_type, role_name, host_id, cluster_name = 'default')
         apirole = ApiRole.new(self, role_name, role_type, ApiHostRef.new(self, host_id))
         call_resource(method(:post), _get_roles_path(cluster_name, service_name), ApiRole, true, [apirole])[0]
       end
 
+      # Lookup a role by name
+      # @param service_name: Service name
+      # @param name: Role name
+      # @param cluster_name: Cluster name
+      # @return: An ApiRole object
       def get_role(service_name, name, cluster_name = 'default')
         _get_role(_get_role_path(cluster_name, service_name, name))
       end
@@ -53,10 +64,19 @@ module CmApi
         call_resource(method(:get), path, ApiRole)
       end
 
+      # Get all roles
+      # @param service_name: Service name
+      # @param cluster_name: Cluster name
+      # @return: A list of ApiRole objects.
       def get_all_roles(service_name, cluster_name = 'default', view = nil)
         call_resource(method(:get), _get_roles_path(cluster_name, service_name), ApiRole, true, nil, view && { 'view' => view } || nil)
       end
 
+      # Get all roles of a certain type in a service
+      # @param service_name: Service name
+      # @param role_type: Role type
+      # @param cluster_name: Cluster name
+      # @return: A list of ApiRole objects.
       def get_roles_by_type(service_name, role_type, cluster_name = 'default', view = nil)
         roles = get_all_roles(service_name, cluster_name, view)
         roles.select { |r| r.type == role_type }
@@ -105,50 +125,83 @@ module CmApi
           @_resource_root._get(path)
         end
 
+        # Retrieve a list of running commands for this role.
+        # @param view: View to materialize ('full' or 'summary')
+        # @return: A list of running commands.
         def get_commands(view = nil)
           _get('commands', ApiCommand, true, nil, view && { 'view' => view } || nil)
         end
 
+        # Retrieve the role's configuration.
+        # The 'summary' view contains strings as the dictionary values. The full
+        # view contains ApiConfig instances as the values.
+        # @param view: View to materialize ('full' or 'summary')
+        # @return: Dictionary with configuration data.
         def get_config(view = nil)
           _get_config('config', view)
         end
 
+        # Update the role's configuration.
+        # @param config: Dictionary with configuration to update.
+        # @return: Dictionary with updated configuration.
         def update_config(config)
           _update_config('config', config)
         end
 
+        # Retrieve the contents of the role's log file.
+        # @return: Contents of log file.
         def get_full_log
           _get_log('full')
         end
 
+        # Retrieve the contents of the role's standard output.
+        # @return: Contents of stdout.
         def get_stdout
           _get_log('stdout')
         end
 
+        # Retrieve the contents of the role's standard error.
+        # @return: Contents of stderr.
         def get_stderr
           _get_log('stderr')
         end
 
+        # Retrieve the contents of the role's stacks log file.
+        # @return: Contents of stacks log file.
+        # @since: API v8
         def get_stacks_log
           _get_log('stacks')
         end
 
+        # Retrieve a zip file of the role's stacks log files.
+        # @return: A zipfile of stacks log files.
+        # @since: API v8
         def get_stacks_log_bundle
           _get_log('stacksBundle')
         end
 
+        # Put the role in maintenance mode.
+        # @return: Reference to the completed command.
+        # @since: API v2
         def enter_maintenance_mode
           cmd = _cmd('enterMaintenanceMode')
           _update(_get_role(_path)) if cmd.success
           cmd
         end
 
+        # Take the role out of maintenance mode.
+        # @return: Reference to the completed command.
+        # @since: API v2
         def exit_maintenance_mode
           cmd = _cmd('exitMaintenanceMode')
           _update(_get_role(_path)) if cmd.success
           cmd
         end
 
+        # Lists all the commands that can be executed by name
+        # on the provided role.
+        # @return: A list of command metadata objects
+        # @since: API v6
         def list_commands_by_name
           _get('commandsByName', ApiCommandMetadata, true, nil, nil, 6)
         end
