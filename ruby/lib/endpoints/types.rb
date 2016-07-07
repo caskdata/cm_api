@@ -576,6 +576,36 @@ module CmApi
           resp = @_resource_root.post(path)
           ApiCommand.from_json_dict(resp, @_resource_root)
         end
+
+        def retry
+          path = _path + '/retry'
+          resp = @_resource_root.post(path)
+          ApiCommand.from_json_dict(resp, @_resource_root)
+        end
+      end
+
+      # Model for a bulk command list
+      class ApiBulkCommandList < ApiList
+        @_ATTRIBUTES = {
+          'errors' => ROAttr.new
+        }
+        @_MEMBER_CLASS = ApiCommand
+      end
+
+      # Model for ApiCommand metadata
+      class ApiCommandMetadata < BaseApiObject
+        @_ATTRIBUTES = {
+          'name' => ROAttr.new,
+          'argSchema' => ROAttr.new
+        }
+
+        def initialize(resource_root)
+          super(resource_root)
+        end
+
+        def to_s
+          "<ApiCommandMetadata>: #{@name} (#{@argSchema})"
+        end
       end
 
       #
