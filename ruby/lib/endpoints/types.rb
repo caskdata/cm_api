@@ -367,7 +367,7 @@ module CmApi
 
         def _call(method_name, rel_path, ret_type, ret_is_list = false, data = nil, params = nil, api_version = 1)
           path = _path
-          path += '/' + rel_path if rel_path
+          path += '/' + rel_path if rel_path && !rel_path.empty?
           call_resource(@_resource_root.method(method_name), path, ret_type, ret_is_list, data, params, api_version)
         end
       end
