@@ -273,7 +273,7 @@ module CmApi
         def to_json_dict(preserve_ro = false)
           dic = {}
           _get_attributes.each do |name, attr|
-            next if !preserve_ro && attr && attr.respond_to?('rw') && !attr.rw
+            next if !preserve_ro && attr && attr.instance_variable_defined?(:@rw) && !attr.instance_variable_get(:@rw)
             begin
               value = instance_variable_get("@#{name}")
               unless value.nil?
