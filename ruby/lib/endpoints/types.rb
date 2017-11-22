@@ -609,6 +609,386 @@ module CmApi
       end
 
       #
+      # Metrics
+      #
+
+      # Metric reading data
+      class ApiMetricData < BaseApiObject
+        @_ATTRIBUTES = {
+          'timestamp' => ROAttr.new(DateTime),
+          'value' => ROAttr.new
+        }
+
+        def initialize(resource_root)
+          super(resource_root)
+        end
+      end
+
+      # Metric information
+      class ApiMetric < BaseApiObject
+        @_ATTRIBUTES = {
+          'name' => ROAttr.new,
+          'context' => ROAttr.new,
+          'unit' => ROAttr.new,
+          'data' => ROAttr.new(ApiMetricData),
+          'displayName' => ROAttr.new,
+          'description' => ROAttr.new
+        }
+
+        def initialize(resource_root)
+          super(resource_root)
+        end
+      end
+
+      #
+      # Activities
+      #
+
+      class ApiActivity < BaseApiObject
+        @_ATTRIBUTES = {
+          'name' => ROAttr.new,
+          'type' => ROAttr.new,
+          'parent' => ROAttr.new,
+          'startTime' => ROAttr.new,
+          'finishTime' => ROAttr.new,
+          'id' => ROAttr.new,
+          'status' => ROAttr.new,
+          'user' => ROAttr.new,
+          'group' => ROAttr.new,
+          'inputDir' => ROAttr.new,
+          'outputDir' => ROAttr.new,
+          'mapper' => ROAttr.new,
+          'combiner' => ROAttr.new,
+          'reducer' => ROAttr.new,
+          'queueName' => ROAttr.new,
+          'schedulerPriority' => ROAttr.new
+        }
+
+        def initialize(resource_root)
+          super(resource_root)
+        end
+
+        def to_s
+          "<ApiActivity>: #{@name} (#{@status})"
+        end
+      end
+
+      #
+      # Replication
+      #
+
+      class ApiCmPeer < BaseApiObject
+        @_ATTRIBUTES = {
+          'name' => nil,
+          'url' => nil,
+          'username' => nil,
+          'password' => nil,
+          'type' => nil,
+          'clouderaManagerCreatedUser' => nil
+        }
+
+        def to_s
+          "<ApiPeer>: #{@name} (#{@uri})"
+        end
+      end
+
+      class ApiLicensedFeatureUsage < BaseApiObject
+        @_ATTRIBUTES = {
+          'totals' => ROAttr.new,
+          'clusters' => ROAttr.new
+        }
+      end
+
+      class ApiHdfsReplicationArguments < BaseApiObject
+        @_ATTRIBUTES = {
+          'sourceService' => Attr.new(ApiServiceRef),
+          'sourcePath' => nil,
+          'destinationPath' => nil,
+          'mapreduceServiceName' => nil,
+          'userName' => nil,
+          'numMaps' => nil,
+          'dryRun' => nil,
+          'bandwidthPerMap' => nil,
+          'logPath' => nil,
+          'schedulerPoolName' => nil,
+          'abortOnError' => nil,
+          'preservePermissions' => nil,
+          'preserveBlockSize' => nil,
+          'preserveReplicationCount' => nil,
+          'removeMissingFiles' => nil,
+          'skipChecksumChecks' => nil,
+          'skipTrash' => nil,
+          'replicationStrategy' => nil,
+          'preserveXAttrs' => nil,
+          'exclusionFilters' => nil
+        }
+      end
+
+      class ApiHdfsReplicationResult < BaseApiObject
+        @_ATTRIBUTES = {
+          'progress' => ROAttr.new,
+          'counters' => ROAttr.new,
+          'numBytesDryRun' => ROAttr.new,
+          'numFilesDryRun' => ROAttr.new,
+          'numFilesExpected' => ROAttr.new,
+          'numBytesExpected' => ROAttr.new,
+          'numFilesCopied' => ROAttr.new,
+          'numBytesCopied' => ROAttr.new,
+          'numFilesSkipped' => ROAttr.new,
+          'numBytesSkipped' => ROAttr.new,
+          'numFilesDeleted' => ROAttr.new,
+          'numFilesCopyFailed' => ROAttr.new,
+          'numBytesCopyFailed' => ROAttr.new,
+          'setupError' => ROAttr.new,
+          'jobId' => ROAttr.new,
+          'jobDetailsUri' => ROAttr.new,
+          'dryRun' => ROAttr.new,
+          'snapshottedDirs' => ROAttr.new,
+          'failedFiles' => ROAttr.new,
+          'runAsUser' => ROAttr.new
+        }
+      end
+
+      class ApiHiveTable < BaseApiObject
+        @_ATTRIBUTES = {
+          'database' => nil,
+          'tableName' => nil
+        }
+
+        def to_s
+          "<ApiHiveTable>: #{@database} (#{@tableName})"
+        end
+      end
+
+      class ApiImpalaUDF < BaseApiObject
+        @_ATTRIBUTES = {
+          'database' => ROAttr.new,
+          'signature' => ROAttr.new
+        }
+
+        def to_s
+          "<ApiImpalaUDF>: #{@database} (#{@signature})"
+        end
+      end
+
+      class ApiHiveReplicationArguments < BaseApiObject
+        @_ATTRIBUTES = {
+          'sourceService' => Attr.new(ApiServiceRef),
+          'tableFilters' => Attr.new(ApiHiveTable),
+          'exportDir' => nil,
+          'force' => nil,
+          'replicateData' => nil,
+          'hdfsArguments' => Attr.new(ApiHdfsReplicationArguments),
+          'dryRun' => nil,
+          'replicateImpalaMetadata' => nil
+        }
+      end
+
+      class ApiHiveReplicationResult < BaseApiObject
+        @_ATTRIBUTES = {
+          'tableCount' => ROAttr.new,
+          'tables' => ROAttr.new(ApiHiveTable),
+          'impalaUDFCount' => ROAttr.new,
+          'impalaUDFs' => ROAttr.new(ApiImpalaUDF),
+          'errorCount' => ROAttr.new,
+          'errors' => ROAttr.new,
+          'dataReplicationResult' => ROAttr.new(ApiHdfsReplicationResult),
+          'dryRun' => ROAttr.new,
+          'runAsUser' => ROAttr.new,
+          'phase' => ROAttr.new
+        }
+      end
+
+      class ApiReplicationCommand < ApiCommand
+        def _get_attributes
+          unless self.class.instance_variable_get(:@_ATTRIBUTES) &&
+                 !self.class.instance_variable_get(:@_ATTRIBUTES).empty?
+            attributes = {
+              'hdfsResult' => ROAttr.new(ApiHdfsReplicationResult),
+              'hiveResult' => ROAttr.new(ApiHiveReplicationResult)
+            }
+            attributes.update(ApiCommand.instance_variable_get(:@_ATTRIBUTES))
+            self.instance_variable_set(:@_ATTRIBUTES, attributes)
+          end
+        end
+      end
+
+      class ApiReplicationSchedule < BaseApiObject
+        @_ATTRIBUTES = {
+          'startTime' => Attr.new(DateTime),
+          'endTime' => Attr.new(DateTime),
+          'interval' => nil,
+          'intervalUnit' => nil,
+          'paused' => nil,
+          'hdfsArguments' => Attr.new(ApiHdfsReplicationArguments),
+          'hiveArguments' => Attr.new(ApiHdfsReplicationArguments),
+          'alertOnStart' => nil,
+          'alertOnSuccess' => nil,
+          'alertOnFail' => nil,
+          'alertOnAbort' => nil,
+          'id' => ROAttr.new,
+          'nextRun' => ROAttr.new(DateTime),
+          'history' => ROAttr.new(ApiReplicationCommand),
+          'active' => nil
+        }
+      end
+
+      class ApiHBaseSnapshotPolicyArguments < BaseApiObject
+        @_ATTRIBUTES = {
+          'tableRegExps' => nil,
+          'storage' => nil
+        }
+      end
+
+      class ApiHdfsSnapshotPolicyArguments < BaseApiObject
+        @_ATTRIBUTES = {
+          'pathPatterns' => nil,
+        }
+      end
+
+      class ApiHBaseSnapshot < BaseApiObject
+        @_ATTRIBUTES = {
+          'snapshotName' => nil,
+          'tableName' => nil,
+          'creationTime' => ROAttr.new(DateTime),
+          'storage' => nil
+        }
+      end
+
+      class ApiHBaseSnapshotError < BaseApiObject
+        @_ATTRIBUTES = {
+          'tableName' => ROAttr.new,
+          'snapshotName' => ROAttr.new,
+          'error' => ROAttr.new,
+          'storage' => ROAttr.new
+        }
+      end
+
+      class ApiHdfsSnapshot < BaseApiObject
+        @_ATTRIBUTES = {
+          'path' => nil,
+          'snapshotName' => nil,
+          'snapshotPath' => nil,
+          'creationTime' => ROAttr.new(DateTime)
+        }
+      end
+
+      class ApiHdfsSnapshotError < BaseApiObject
+        @_ATTRIBUTES = {
+          'path' => ROAttr.new,
+          'snapshotName' => ROAttr.new,
+          'snapshotPath' => ROAttr.new,
+          'error' => ROAttr.new
+        }
+      end
+
+      class ApiHBaseSnapshotResult < BaseApiObject
+        @_ATTRIBUTES = {
+          'processedTableCount' => ROAttr.new,
+          'processedTables' => ROAttr.new,
+          'unprocessedTableCount' => ROAttr.new,
+          'unprocessedTables' => ROAttr.new,
+          'createdSnapshotCount' => ROAttr.new,
+          'createdSnapshots' => ROAttr.new(ApiHBaseSnapshot),
+          'deletedSnapshotCount' => ROAttr.new,
+          'deletedSnapshots' => ROAttr.new(ApiHBaseSnapshot),
+          'creationErrorCount' => ROAttr.new,
+          'creationErrors' => ROAttr.new(ApiHBaseSnapshotError),
+          'deletionErrorCount' => ROAttr.new,
+          'deletionErrors' => ROAttr.new(ApiHBaseSnapshotError)
+        }
+      end
+
+      class ApiHdfsSnapshotResult < BaseApiObject
+        @_ATTRIBUTES = {
+          'processedPathCount' => ROAttr.new,
+          'processedPaths' => ROAttr.new,
+          'unprocessedPathCount' => ROAttr.new,
+          'unprocessedPaths' => ROAttr.new,
+          'createdSnapshotCount' => ROAttr.new,
+          'createdSnapshots' => ROAttr.new(ApiHdfsSnapshot),
+          'deletedSnapshotCount' => ROAttr.new,
+          'deletedSnapshots' => ROAttr.new(ApiHdfsSnapshot),
+          'creationErrorCount' => ROAttr.new,
+          'creationErrors' => ROAttr.new(ApiHdfsSnapshotError),
+          'deletionErrorCount' => ROAttr.new,
+          'deletionErrors' => ROAttr.new(ApiHdfsSnapshotError)
+        }
+      end
+
+      class ApiSnapshotCommand < BaseApiObject
+        def _get_attributes
+          unless self.class.instance_variable_get(:@_ATTRIBUTES) &&
+                 !self.class.instance_variable_get(:@_ATTRIBUTES).empty?
+            attributes = {
+              'hdfsResult' => ROAttr.new(ApiHdfsSnapshotResult),
+              'hbaseResult' => ROAttr.new(ApiHBaseSnapshotResult)
+            }
+            attributes.update(ApiCommand.instance_variable_get(:@_ATTRIBUTES))
+            self.instance_variable_set(:@_ATTRIBUTES, attributes)
+          end
+        end
+      end
+
+      class ApiSnapshotPolicy < BaseApiObject
+        @_ATTRIBUTES = {
+          'name' => nil,
+          'description' => nil,
+          'hourlySnapshots' => nil,
+          'dailySnapshots' => nil,
+          'weeklySnapshots' => nil,
+          'monthlySnapshots' => nil,
+          'yearlySnapshots' => nil,
+          'minuteOfHour' => nil,
+          'hourOfDay' => nil,
+          'dayOfWeek' => nil,
+          'dayOfMonth' => nil,
+          'monthOfYear' => nil,
+          'hoursForHourlySnapshots' => nil,
+          'alertOnStart' => nil,
+          'alertOnSuccess' => nil,
+          'alertOnFail' => nil,
+          'alertOnAbort' => nil,
+          'paused' => nil,
+          'hbaseArguments' => Attr.new(ApiHBaseSnapshotPolicyArguments),
+          'hdfsArguments' => Attr.new(ApiHdfsSnapshotPolicyArguments),
+          'lastCommand' => ROAttr.new(ApiSnapshotCommand),
+          'lastSuccessfulCommand' => ROAttr.new(ApiSnapshotCommand)
+        }
+      end
+
+      #
+      # Batch.
+      #
+
+      # One element in a batch request
+      class ApiBatchRequestElement < BaseApiObject
+        @_ATTRIBUTES = {
+          'method' => nil,
+          'url' => nil,
+          'body' => nil,
+          'contentType' => nil,
+          'acceptType' => nil
+        }
+      end
+
+      # One element in a batch response
+      class ApiBatchResponseElement < BaseApiObject
+        @_ATTRIBUTES = {
+          'statusCode' => ROAttr.new,
+          'response' => ROAttr.new
+        }
+      end
+
+      # A list of batch response objects
+      class ApiBatchResponseList < ApiList
+        @_MEMBER_CLASS = ApiBatchResponseElement
+        @_ATTRIBUTES = {
+          'success' => ROAttr.new
+        }
+      end
+
+      #
       # Configuration helpers.
       #
       class ApiConfig < BaseApiObject
@@ -632,6 +1012,254 @@ module CmApi
         def to_s
           "<ApiConfig>: #{@name} = #{@value}"
         end
+      end
+
+      class ApiImpalaQuery < BaseApiObject
+        @_ATTRIBUTES = {
+          'queryId' => ROAttr.new,
+          'queryState' => ROAttr.new,
+          'queryType' => ROAttr.new,
+          'statement' => ROAttr.new,
+          'database' => ROAttr.new,
+          'rowsProduced' => ROAttr.new,
+          'coordinator' => ROAttr.new(ApiHostRef),
+          'user' => ROAttr.new,
+          'startTime' => ROAttr.new(DateTime),
+          'endTime' => ROAttr.new(DateTime),
+          'detailsAvailable' => ROAttr.new,
+          'attributes' => ROAttr.new,
+          'durationMillis' => ROAttr.new
+        }
+
+        def to_s
+          "<ApiImpalaQuery>: #{@queryId}"
+        end
+      end
+
+      class ApiImpalaQueryResponse < BaseApiObject
+        @_ATTRIBUTES = {
+          'queries' => ROAttr.new(ApiImpalaQuery),
+          'warnings' => ROAttr.new
+        }
+      end
+
+      class ApiImpalaQueryDetailsResponse < BaseApiObject
+        @_ATTRIBUTES = {
+          'details' => ROAttr.new
+        }
+
+        def to_s
+          "<ApiImpalaQueryDetailsResponse> #{@details}"
+        end
+      end
+
+      class ApiImpalaCancelResponse < BaseApiObject
+        @_ATTRIBUTES = {
+          'warning' => ROAttr.new
+        }
+
+        def to_s
+          "<ApiImpalaCancelResponse> #{@warning}"
+        end
+      end
+
+      class ApiImpalaQueryAttribute < BaseApiObject
+        @_ATTRIBUTES = {
+          'name' => ROAttr.new,
+          'type' => ROAttr.new,
+          'displayName' => ROAttr.new,
+          'supportsHistograms' => ROAttr.new,
+          'description' => ROAttr.new
+        }
+
+        def to_s
+          "<ApiImpalaQueryAttribute> #{@name}"
+        end
+      end
+
+      class ApiMr2AppInformation < BaseApiObject
+        @_ATTRIBUTES = {
+          'jobState' => ROAttr.new
+        }
+
+        def to_s
+          "<ApiMr2AppInformation>: #{@jobState}"
+        end
+      end
+
+      class ApiYarnApplication < BaseApiObject
+        @_ATTRIBUTES = {
+          'applicationId' => ROAttr.new,
+          'name' => ROAttr.new,
+          'user' => ROAttr.new,
+          'startTime' => ROAttr.new(DateTime),
+          'endTime' => ROAttr.new(DateTime),
+          'pool' => ROAttr.new,
+          'state' => ROAttr.new,
+          'progress' => ROAttr.new,
+          'mr2AppInformation' => ROAttr.new(ApiMr2AppInformation),
+          'attributes' => ROAttr.new,
+          'allocatedMB' => ROAttr.new,
+          'allocatedVCores' => ROAttr.new,
+          'runningContainers' => ROAttr.new,
+          'applicationTags' => ROAttr.new,
+          'allocatedMemorySeconds' => ROAttr.new,
+          'allocatedVcoreSeconds' => ROAttr.new,
+          'containerUsedMemorySeconds' => ROAttr.new,
+          'containerUsedCpuSeconds' => ROAttr.new,
+          'containerUsedVcoreSeconds' => ROAttr.new,
+          'containerAllocatedMemorySeconds' => ROAttr.new,
+          'containerAllocatedVcoreSeconds' => ROAttr.new
+        }
+
+        def to_s
+          "<ApiYarnApplication>: #{@applicationId}"
+        end
+      end
+
+      class ApiYarnApplicationResponse < BaseApiObject
+        @_ATTRIBUTES = {
+          'applications' => ROAttr.new(ApiYarnApplication),
+          'warnings' => ROAttr.new
+        }
+      end
+
+      class ApiYarnKillResponse < BaseApiObject
+        @_ATTRIBUTES = {
+          'warning' => ROAttr.new
+        }
+
+        def to_s
+          "<ApiYarnKillResponse> #{@warning}"
+        end
+      end
+
+      class ApiYarnApplicationAttribute < BaseApiObject
+        @_ATTRIBUTES = {
+          'name' => ROAttr.new,
+          'type' => ROAttr.new,
+          'displayName' => ROAttr.new,
+          'supportsHistograms' => ROAttr.new,
+          'description' => ROAttr.new
+        }
+
+        def to_s
+          "<ApiYarnApplicationAttribute> #{@name}"
+        end
+      end
+
+      class ApiTimeSeriesRequest < BaseApiObject
+        @_ATTRIBUTES = {
+          'query' => nil,
+          'from' => nil,
+          'to' => nil,
+          'contentType' => nil,
+          'desiredRollup' => nil,
+          'mustUseDesiredRollup' => nil
+        }
+
+        def to_s
+          "<ApiTimeSeriesRequest>: #{@query}"
+        end
+      end
+
+      class ApiProductVersion < BaseApiObject
+        @_ATTRIBUTES = {
+          'version' => nil,
+          'product' => nil
+        }
+      end
+
+      class ApiClusterTemplateConfig < BaseApiObject
+        @_ATTRIBUTES = {
+          'name' => nil,
+          'value' => nil,
+          'ref' => nil,
+          'variable' => nil,
+          'autoConfig' => nil
+        }
+      end
+
+      class ApiClusterTemplateRoleConfigGroup < BaseApiObject
+        @_ATTRIBUTES = {
+          'refName' => nil,
+          'roleType' => nil,
+          'base' => nil,
+          'displayName' => nil,
+          'configs' => Attr.new(ApiClusterTemplateConfig)
+        }
+      end
+
+      class ApiClusterTemplateRole < BaseApiObject
+        @_ATTRIBUTES = {
+          'refName' => nil,
+          'roleType' => nil
+        }
+      end
+
+      class ApiClusterTemplateHostTemplate < BaseApiObject
+        @_ATTRIBUTES = {
+          'refName' => nil,
+          'cardinality' => nil,
+          'roleConfigGroupsRefNames' => nil
+        }
+      end
+
+      class ApiClusterTemplateHostInfo < BaseApiObject
+        @_ATTRIBUTES = {
+          'hostName' => nil,
+          'hostNameRange' => nil,
+          'rackId' => nil,
+          'hostTemplateRefName' => nil,
+          'roleRefNames' => nil
+        }
+      end
+
+      class ApiClusterTemplateVariable < BaseApiObject
+        @_ATTRIBUTES = {
+          'name' => nil,
+          'value' => nil
+        }
+      end
+
+      class ApiClusterTemplateRoleConfigGroupInfo < BaseApiObject
+        @_ATTRIBUTES = {
+          'rcgRefName' => nil,
+          'name' => nil
+        }
+      end
+
+      class ApiClusterTemplateInstantiator < BaseApiObject
+        @_ATTRIBUTES = {
+          'clusterName' => nil,
+          'hosts' => Attr.new(ApiClusterTemplateHostInfo),
+          'variables' => Attr.new(ApiClusterTemplateVariable),
+          'roleConfigGroups' => Attr.new(ApiClusterTemplateRoleConfigGroupInfo)
+        }
+      end
+
+      class ApiClusterTemplateService < BaseApiObject
+        @_ATTRIBUTES = {
+          'refName' => nil,
+          'serviceType' => nil,
+          'serviceConfigs' => Attr.new(ApiClusterTemplateConfig),
+          'roleConfigGroups' => Attr.new(ApiClusterTemplateRoleConfigGroup),
+          'displayName' => nil,
+          'roles' => Attr.new(ApiClusterTemplateRole)
+        }
+      end
+
+      class ApiClusterTemplate < BaseApiObject
+        @_ATTRIBUTES = {
+          'cdhVersion' => nil,
+          'displayName' => nil,
+          'cmVersion' => nil,
+          'repositories' => nil,
+          'products' => Attr.new(ApiProductVersion),
+          'services' => Attr.new(ApiClusterTemplateService),
+          'hostTemplates' => Attr.new(ApiClusterTemplateHostTemplate),
+          'instantiator' => Attr.new(ApiClusterTemplateInstantiator)
+        }
       end
 
       def config_to_api_list(dic)
@@ -658,6 +1286,7 @@ module CmApi
         end
         config
       end
+
     end
   end
 end
