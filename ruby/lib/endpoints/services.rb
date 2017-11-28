@@ -40,7 +40,7 @@ module CmApi
       end
 
       def get_service(name, cluster_name = 'default')
-        _get_service(self, format('%s/%s', format(SERVICES_PATH, cluster_name), name))
+        _get_service(format('%s/%s', format(SERVICES_PATH, cluster_name), name))
       end
 
       def _get_service(path)
