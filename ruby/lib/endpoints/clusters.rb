@@ -38,6 +38,9 @@ module CmApi
         end
 
         apicluster = ApiCluster.new(self, name, version, fullVersion)
+        # Ruby port note: as this module is included directly into a resource (ApiResource), we call
+        # the :get/:post method directly.  In other BaseApiObject-derived modules (Services/Roles), we must call the
+        # method on the @_resource_root instance variable object (ApiResource)
         call_resource(method(:post), CLUSTERS_PATH, ApiCluster, true, [apicluster], nil, api_version)[0]
       end
 

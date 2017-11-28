@@ -151,6 +151,10 @@ module CmApi
       # @param data: Optional data to send as payload to the call.
       # @param params: Optional query parameters for the call.
       # @param api_version: minimum API version for the call.
+
+      # Ruby port note: this method is mixed into both ApiResource and ApiBaseObject objects. Currently this requires
+      # the correct bounded method to be passed in. We may want to instead compare the receiver and self.class to know
+      # if we should be calling the method on ourself versus the @_resource_root instance variable object
       def call_resource(method, path, ret_type, ret_is_list = false, data = nil, params = nil, api_version = 1)
         check_api_version(method.receiver, api_version)
         if !data.nil?

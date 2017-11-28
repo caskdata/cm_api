@@ -32,23 +32,23 @@ module CmApi
 
       def create_host_template(name, cluster_name)
         apitemplate = ApiHostTemplate.new(name, [])
-        call_resource(method(:post), format(HOST_TEMPLATES_PATH, cluster_name), ApiHostTemplate, true, [apitemplate], nil, 3)[0]
+        call_resource(@_resource_root.method(:post), format(HOST_TEMPLATES_PATH, cluster_name), ApiHostTemplate, true, [apitemplate], nil, 3)[0]
       end
 
       def get_host_template(name, cluster_name)
-        call_resource(method(:get), format(HOST_TEMPLATE_PATH, cluster_name, name), ApiHostTemplate, nil, nil, nil, 3)
+        call_resource(@_resource_root.method(:get), format(HOST_TEMPLATE_PATH, cluster_name, name), ApiHostTemplate, nil, nil, nil, 3)
       end
 
       def get_all_host_templates(cluster_name = 'default')
-        call_resource(method(:get), format(HOST_TEMPLATES_PATH, cluster_name), ApiHostTemplate, true, nil, nil, 3)
+        call_resource(@_resource_root.method(:get), format(HOST_TEMPLATES_PATH, cluster_name), ApiHostTemplate, true, nil, nil, 3)
       end
 
       def delete_host_template(name, cluster_name)
-        call_resource(method(:delete), format(HOST_TEMPLATE_PATH, cluster_name, name), ApiHostTemplate, nil, nil, 3)
+        call_resource(@_resource_root.method(:delete), format(HOST_TEMPLATE_PATH, cluster_name, name), ApiHostTemplate, nil, nil, 3)
       end
 
       def update_host_template(name, cluster_name, api_host_template)
-        call_resource(method(:put), format(HOST_TEMPLATE_PATH, cluster_name, name), ApiHostTemplate, nil, api_host_template, nil, 3)
+        call_resource(@_resource_root.method(:put), format(HOST_TEMPLATE_PATH, cluster_name, name), ApiHostTemplate, nil, api_host_template, nil, 3)
       end
 
       def apply_host_template(name, cluster_name, host_ids, start_roles)
@@ -58,7 +58,7 @@ module CmApi
         end
 
         params = {'startRoles' => start_roles }
-        call_resource(method(:post), format(APPLY_HOST_TEMPLATE_PATH, cluster_name, name), ApiCommand, nil, host_refs, params, 3)
+        call_resource(@_resource_root.method(:post), format(APPLY_HOST_TEMPLATE_PATH, cluster_name, name), ApiCommand, nil, host_refs, params, 3)
       end
 
       class ApiHostTemplate < BaseApiResource

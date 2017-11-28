@@ -48,7 +48,7 @@ module CmApi
       # @return: New ApiRoleConfigGroup object.
       # @since: API v3
       def create_role_config_groups(service_name, apigroup_list, cluster_name = 'default')
-        call_resource(method(:post), _get_role_config_groups_path(cluster_name, service_name), ApiRoleConfigGroup, true, apigroup_list, nil, 3)
+        call_resource(@_resource_root.method(:post), _get_role_config_groups_path(cluster_name, service_name), ApiRoleConfigGroup, true, apigroup_list, nil, 3)
       end
 
       # Create a role config group.
@@ -73,7 +73,7 @@ module CmApi
       end
 
       def _get_role_config_group(path)
-        call_resource(method(:get), path, ApiRoleConfigGroup, false, nil, nil, 3)
+        call_resource(@_resource_root.method(:get), path, ApiRoleConfigGroup, false, nil, nil, 3)
       end
 
       # Get all role config groups in the specified service.
@@ -82,7 +82,7 @@ module CmApi
       # @return: A list of ApiRoleConfigGroup objects.
       # @since: API v3
       def get_all_role_config_groups(service_name, cluster_name = 'default')
-        call_resource(method(:get), _get_role_config_groups_path(cluster_name, service_name), ApiRoleConfigGroup, true, nil, nil, 3) 
+        call_resource(@_resource_root.method(:get), _get_role_config_groups_path(cluster_name, service_name), ApiRoleConfigGroup, true, nil, nil, 3)
       end
 
       # Update a role config group by name.
@@ -93,7 +93,7 @@ module CmApi
       # @return: The updated ApiRoleConfigGroup object.
       # @since: API v3
       def update_role_config_group(service_name, name, apigroup, cluster_name = 'default')
-        call_resource(method(:put), _get_role_config_group_path(cluster_name, service_name, name), ApiRoleConfigGroup, false, apigroup, nil, 3)
+        call_resource(@_resource_root.method(:put), _get_role_config_group_path(cluster_name, service_name, name), ApiRoleConfigGroup, false, apigroup, nil, 3)
       end 
 
       # Delete a role config group by name.
@@ -103,7 +103,7 @@ module CmApi
       # @return: The deleted ApiRoleConfigGroup object.
       # @since: API v3
       def delete_role(service_name, name, cluster_name = 'default')
-        call_resource(method(:delete), _get_role_config_group_path(cluster_name, service_name, name), ApiRoleConfigGroup, false, nil, nil, 3)
+        call_resource(@_resource_root.method(:delete), _get_role_config_group_path(cluster_name, service_name, name), ApiRoleConfigGroup, false, nil, nil, 3)
       end
 
       # Moves roles to the specified role config group.
@@ -117,7 +117,7 @@ module CmApi
       # @return: List of roles which have been moved successfully.
       # @since: API v3
       def move_roles(service_name, name, role_names, cluster_name = 'default')
-        call_resource(method(:put), _get_role_config_group_path(cluster_name, service_name, name) + '/roles', ApiRole, true, role_names, nil, 3)
+        call_resource(@_resource_root.method(:put), _get_role_config_group_path(cluster_name, service_name, name) + '/roles', ApiRole, true, role_names, nil, 3)
       end
 
       # Moves roles to the base role config group.
@@ -130,7 +130,7 @@ module CmApi
       # @return: List of roles which have been moved successfully.
       # @since: API v3
       def move_roles_to_base_role_config_group(service_name, role_names, cluster_name = 'default')
-        call_resource(method(:put), _get_role_config_groups_path(cluster_name, service_name) + '/roles', ApiRole, true, role_names, nil, 3)
+        call_resource(@_resource_root.method(:put), _get_role_config_groups_path(cluster_name, service_name) + '/roles', ApiRole, true, role_names, nil, 3)
       end
 
       # Model for a RoleConfigGroup

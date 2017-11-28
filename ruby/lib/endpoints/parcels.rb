@@ -39,7 +39,7 @@ module CmApi
       end
 
       def _get_parcel(path)
-        call_resource(method(:get), path, ApiParcel, false, nil, nil, 3)
+        call_resource(@_resource_root.method(:get), path, ApiParcel, false, nil, nil, 3)
       end
 
       # Get all parcels
@@ -48,7 +48,7 @@ module CmApi
       # @return: A list of ApiParcel objects.
       # @since: API v3
       def get_all_parcels(cluster_name = 'default', view = nil)
-        call_resource(method(:get), format(PARCELS_PATH, cluster_name), ApiParcel, true, nil, view && { 'view' => view } || nil, 3)
+        call_resource(@_resource_root.method(:get), format(PARCELS_PATH, cluster_name), ApiParcel, true, nil, view && { 'view' => view } || nil, 3)
       end
 
       # An object that represents the state of a parcel.
