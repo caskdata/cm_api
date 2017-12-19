@@ -71,6 +71,20 @@ module CmApi
           _get('license', ApiLicense)
         end
 
+        def update_license(license_text)
+          content = [
+            '--MULTI_BOUNDARY',
+            'Content-Disposition: form-data; name="license"',
+            '',
+            license_text,
+            '--MULTI_BOUNDARY--',
+            '']
+          resp = @_resource_root.post('cm/license', nil, content.join("\r\n"), 'multipart/form-data; boundary=MULTI_BOUNDARY')
+          ApiLicense.from_json_dict(resp, @_resource_root)
+        end
+
+
+
         def get_config(view = nil)
           _get_config('config', view)
         end
@@ -87,9 +101,35 @@ module CmApi
           _cmd('importAdminCredentials', nil, 'username' => username, 'password' => password)
         end
 
+        def get_licensed_feature_usage
+          _get('getLicensedFeatureUsage', ApiLicensedFeatureUsage, false, nil, 6)
+        end
+
         def inspect_hosts
           _cmd('inspectHosts')
         end
+
+        # TODO: collect_diagnostic_data_45
+
+        def hosts_decommission(host_names)
+          _cmd('hostsDecommission', host_names)
+        end
+
+        def hosts_recommission(host_names)
+          _cmd('hostsRecommission', host_names)
+        end
+
+        def hosts_start_roles(host_names)
+          _cmd('hostsStartRoles', host_names)
+        end
+
+        # TODO: create_peer
+        # TODO: _get_peer_type_param
+        # TODO: delete_peer
+        # TODO: update_peer
+        # TODO: get_peers
+        # TODO: get_peer
+        # TODO: test_peer_connectivity
 
         def get_all_hosts_config(view = nil)
           _get_config('allHosts/config', view)
@@ -134,6 +174,10 @@ module CmApi
 
         def end_trial
           _post('trial/end', nil, false, nil, nil, 6)
+        end
+
+        def import_cluster_template(api_cluster_template, add_repositories = false)
+          _post('importClusterTemplate', ApiCommand, false, api_cluster_template, {'addRepositories' => add_repositories}, 12)
         end
       end
     end

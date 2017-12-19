@@ -105,9 +105,9 @@ module CmApi
             return DateTime.strptime(data.to_s, DATE_FROM_FMT)
           elsif @_atype == ApiConfig
             # return hash for summary view, ApiList for full view. Detect from JSON data
-            return {} unless data.key?('items')
+            return {} unless data.key?('items') && !data['items'].empty?
             first = data['items'][0]
-            return json_to_config(data, first.length == 2)
+            return ::CmApi::Endpoints::Types::json_to_config(data, first.length == 2)
           elsif @_is_api_list
             return ApiList.from_json_dict(data, resource_root, @_atype)
           elsif data.is_a?(Array)
@@ -344,13 +344,13 @@ module CmApi
           _require_min_api_version(api_version)
           params = view && { 'view' => view } || nil
           resp = @_resource_root.get(_path + '/' + rel_path, params)
-          json_to_config(resp, view == 'full')
+          ::CmApi::Endpoints::Types::json_to_config(resp, view == 'full')
         end
 
         def _update_config(rel_path, config, api_version = 1)
           _require_min_api_version(api_version)
           resp = @_resource_root.put(_path + '/' + rel_path, nil, config_to_json(config))
-          json_to_config(resp, false)
+          ::CmApi::Endpoints::Types::json_to_config(resp, false)
         end
 
         def _delete(rel_path, ret_type, ret_is_list = false, params = nil, api_version = 1)
@@ -404,8 +404,16 @@ module CmApi
           @objects.length
         end
 
+        def size
+          @objects.size
+        end
+
         def each(&block)
           @objects.each(&block)
+        end
+
+        def select(&block)
+          @objects.select(&block)
         end
 
         def [](i)
@@ -1278,7 +1286,7 @@ module CmApi
         config_to_api_list(dic).to_json
       end
 
-      def json_to_config(dic, full = false)
+      def self.json_to_config(dic, full = false)
         config = {}
         dic['items'].each do |entry|
           k = entry['name']

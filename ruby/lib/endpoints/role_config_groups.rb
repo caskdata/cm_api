@@ -102,7 +102,7 @@ module CmApi
       # @param cluster_name: Cluster name.
       # @return: The deleted ApiRoleConfigGroup object.
       # @since: API v3
-      def delete_role(service_name, name, cluster_name = 'default')
+      def delete_role_config_group(service_name, name, cluster_name = 'default')
         call_resource(@_resource_root.method(:delete), _get_role_config_group_path(cluster_name, service_name, name), ApiRoleConfigGroup, false, nil, nil, 3)
       end
 

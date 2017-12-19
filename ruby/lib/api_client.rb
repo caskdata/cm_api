@@ -23,8 +23,6 @@ require_relative 'endpoints/types.rb'
 require_relative 'endpoints/clusters.rb'
 require_relative 'endpoints/hosts.rb'
 require_relative 'endpoints/cms.rb'
-require_relative 'endpoints/roles.rb'
-require_relative 'endpoints/services.rb'
 
 module CmApi
   API_AUTH_REALM = 'Cloudera Manager'.freeze
@@ -50,8 +48,9 @@ module CmApi
   class ApiResource < Resource
     include ::CmApi::Endpoints::Clusters
     include ::CmApi::Endpoints::Hosts
+    #include ::CmApi::Endpoints::Services
     include ::CmApi::Endpoints::Roles
-    include ::CmApi::Endpoints::Services
+    #include ::CmApi::Endpoints::Services
 
     attr_accessor :version
 

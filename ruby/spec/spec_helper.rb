@@ -40,7 +40,7 @@ class MockResource < ::CmApi::Resource
     exp_method, exp_path, exp_params, exp_data, exp_headers, retdata = @_next_expect
     @_next_expect = nil
 
-    RSpec.describe MockResource do
+    RSpec.describe "MockResource #{[exp_method, exp_path].join(' ')}" do
       unless exp_method.nil?
         it 'receives expected method' do
           expect(method).to eq exp_method
