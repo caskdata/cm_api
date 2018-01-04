@@ -135,6 +135,7 @@ module CmApi
 
       # Model for a RoleConfigGroup
       class ApiRoleConfigGroup < BaseApiResource
+        include ::CmApi::Endpoints::RoleConfigGroups
         # name is RW only temporarily; once all RCG names are unique,
         # this property will be auto-generated and Read-only
         @_ATTRIBUTES = {
@@ -172,7 +173,7 @@ module CmApi
         def get_config(view = nil)
           path = _path() + '/config'
           resp = @_resource_root.get(path, view && { 'view' => view } || nil)
-          json_to_config(resp, view == 'full')
+          ::CmApi::Endpoints::Types::json_to_config(resp, view == 'full')
         end
 
         # Update the group's configuration.
@@ -182,7 +183,7 @@ module CmApi
         def update_config(config)
           path = _path() + '/config'
           resp = @_resource_root.put(path, nil, config_to_json(config))
-          json_to_config(resp)
+          ::CmApi::Endpoints::Types::json_to_config(resp)
         end
 
         # Retrieve the roles in this role config group.

@@ -166,7 +166,7 @@ module CmApi
           hostIds.each do |hostid|
             hostRefList << ApiHostRef.new(@_resource_root, hostid)
           end
-          _post('hosts', ApiHostRef, true, hostRefList, 3)
+          _post('hosts', ApiHostRef, true, hostRefList, nil, 3)
         end
 
         def start

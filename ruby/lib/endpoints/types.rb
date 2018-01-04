@@ -416,6 +416,14 @@ module CmApi
           @objects.select(&block)
         end
 
+        def collect(&block)
+          @objects.collect(&block)
+        end
+
+        def map(&block)
+          @objects.map(&block)
+        end
+
         def [](i)
           @objects[i]
         end
@@ -542,7 +550,7 @@ module CmApi
         end
 
         def to_s
-          "<ApiCommand>: '#{@name}' (id: #{@id}; active: #{@active}; success: #{@success}"
+          "<ApiCommand>: '#{@name}' (id: #{@id}; active: #{@active}; success: #{@success})"
         end
 
         def _path

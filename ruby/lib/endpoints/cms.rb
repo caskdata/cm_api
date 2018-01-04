@@ -52,19 +52,19 @@ module CmApi
         end
 
         def get_commands(view = nil)
-          _get('commands', ApiCommand, true, nil, view && { 'view' => view } || nil)
+          _get('commands', ApiCommand, true, view && { 'view' => view } || nil)
         end
 
         def create_mgmt_service(service_setup_info)
-          _put('service', ApiService, false, service_setup_info)
+          _put('service', ::CmApi::Endpoints::Services::ApiService, false, service_setup_info)
         end
 
         def delete_mgmt_service
-          _delete('service', ApiService, false, nil, 6)
+          _delete('service', ::CmApi::Endpoints::Services::ApiService, false, nil, 6)
         end
 
         def get_service
-          _get('service', ApiService)
+          _get('service', ::CmApi::Endpoints::Services::ApiService)
         end
 
         def get_license

@@ -280,7 +280,7 @@ module CmApi
         # Ruby port note: wrapping method from another module
         rcg_get_role_config_group = instance_method(:get_role_config_group)
         define_method(:get_role_config_group) do |name|
-          rcg_get_role_config_groups.bind(self).(@name, name, _get_cluster_name)
+          rcg_get_role_config_group.bind(self).(@name, name, _get_cluster_name)
         end
 
         # Ruby port note: wrapping method from another module
@@ -600,8 +600,17 @@ module CmApi
         def list_commands_by_name
           _get('commandsByName', ApiCommandMetadata, true, nil, 6)
         end
+
+        # Ruby port note: this is not defined in the python bindings, why not?
+        def first_run
+          _cmd('firstRun', nil, nil, 7)
+        end
+
       end
 
+      # Ruby port note
+      # this should extend from ApiService. But it cant until BaseObject initialization can handle
+      # a dynamic number of args.  need to look at using *args all the way up the chain.
       class ApiServiceSetupInfo < ApiService
         @_ATTRIBUTES = {
           'name' => nil,
@@ -610,17 +619,28 @@ module CmApi
           'roles' => Attr.new(ApiRole)
         }
 
+        def initialize(resource_root, name = nil, type = nil, config = nil, roles = nil)
+          # TODO: fix this ugly hack. super() doesn't work because it needs to pass in more stuff
+          #class ApiServiceSetupInfo < BaseApiResource
+          #super(nil, { name: name, type: type, config: config, roles: roles })
+          grandparent = self.class.superclass.superclass
+          meth = grandparent.instance_method(:initialize)
+          meth.bind(self).call(nil, { name: name, type: type, config: config, roles: roles })
+        end
 
-        # TODO: initialize
-        # TODO: set_config
+        def set_config(config)
+          @config ||= {}
+          @config.update(config_to_api_list(config))
+        end
+
+
         # TODO: add_role_type_info
         # TODO: add_role_info
-        # TODO: first_run
 
+        def first_run
+          _cmd('firstRun', nil, nil, 7)
+        end
       end
-
-
-
     end
   end
 end

@@ -88,6 +88,7 @@ module CmApi
 
       # Model for a role
       class ApiRole < BaseApiResource
+        include ::CmApi::Endpoints::Roles
         @_ATTRIBUTES = {
           'name' => nil,
           'type' => nil,
@@ -104,7 +105,7 @@ module CmApi
           'maintenanceMode' => ROAttr.new,
           'maintenanceOwners' => ROAttr.new,
           'roleConfigGroupRef' => ROAttr.new(ApiRoleConfigGroupRef),
-          'zookeeperServerMode' => ROAttr.new,
+          'zooKeeperServerMode' => ROAttr.new,
           'entityStatus' => ROAttr.new
         }
 

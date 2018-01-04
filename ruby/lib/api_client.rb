@@ -48,6 +48,7 @@ module CmApi
   class ApiResource < Resource
     include ::CmApi::Endpoints::Clusters
     include ::CmApi::Endpoints::Hosts
+    include ::CmApi::Endpoints::Cms
     #include ::CmApi::Endpoints::Services
     include ::CmApi::Endpoints::Roles
     #include ::CmApi::Endpoints::Services
@@ -73,6 +74,10 @@ module CmApi
       client.set_basic_auth(username, password, API_AUTH_REALM)
       client.headers = { :'content-type' => 'application/json' }
       super(client)
+    end
+
+    def get_cloudera_manager
+      ClouderaManager.new(self)
     end
   end
 
