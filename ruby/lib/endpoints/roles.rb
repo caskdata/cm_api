@@ -48,7 +48,7 @@ module CmApi
       # @return: An ApiRole object
       def create_role(service_name, role_type, role_name, host_id, cluster_name = 'default')
         apirole = ApiRole.new(self, role_name, role_type, ApiHostRef.new(self, host_id))
-        call_resource(method(:post), _get_roles_path(cluster_name, service_name), ApiRole, true, [apirole])[0]
+        call_resource(@_resource_root.method(:post), _get_roles_path(cluster_name, service_name), ApiRole, true, [apirole])[0]
       end
 
       # Lookup a role by name
@@ -61,7 +61,7 @@ module CmApi
       end
 
       def _get_role(path)
-        call_resource(method(:get), path, ApiRole)
+        call_resource(@_resource_root.method(:get), path, ApiRole)
       end
 
       # Get all roles
@@ -69,7 +69,7 @@ module CmApi
       # @param cluster_name: Cluster name
       # @return: A list of ApiRole objects.
       def get_all_roles(service_name, cluster_name = 'default', view = nil)
-        call_resource(method(:get), _get_roles_path(cluster_name, service_name), ApiRole, true, nil, view && { 'view' => view } || nil)
+        call_resource(@_resource_root.method(:get), _get_roles_path(cluster_name, service_name), ApiRole, true, nil, view && { 'view' => view } || nil)
       end
 
       # Get all roles of a certain type in a service
@@ -83,11 +83,12 @@ module CmApi
       end
 
       def delete_role(service_name, name, cluster_name = 'default')
-        call_resource(method(:delete), _get_role_path(cluster_name, service_name, name), ApiRole)
+        call_resource(@_resource_root.method(:delete), _get_role_path(cluster_name, service_name, name), ApiRole)
       end
 
       # Model for a role
       class ApiRole < BaseApiResource
+        include ::CmApi::Endpoints::Roles
         @_ATTRIBUTES = {
           'name' => nil,
           'type' => nil,
@@ -104,7 +105,7 @@ module CmApi
           'maintenanceMode' => ROAttr.new,
           'maintenanceOwners' => ROAttr.new,
           'roleConfigGroupRef' => ROAttr.new(ApiRoleConfigGroupRef),
-          'zookeeperServerMode' => ROAttr.new,
+          'zooKeeperServerMode' => ROAttr.new,
           'entityStatus' => ROAttr.new
         }
 

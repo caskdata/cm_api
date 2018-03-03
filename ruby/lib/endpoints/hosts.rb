@@ -92,6 +92,31 @@ module CmApi
           _update_config('config', config)
         end
 
+        def enter_maintenance_mode
+          cmd = _cmd('enterMaintenanceMode')
+          if cmd.success
+            _update(get_host(@hostId))
+          end
+          cmd
+        end
+
+        def exit_maintenance_mode
+          cmd = _cmd('exitMaintenanceMode')
+          if cmd.success
+            _update(get_host(@hostId))
+          end
+          cmd
+        end
+ 
+        def migrate_roles(role_names_to_migrate, destination_host_id, clear_stale_role_data)
+          args = {
+            'roleNamesToMigrate' => role_names_to_migrate,
+            'destinationHostId' => destination_host_id,
+            'clearStaleRoleData' => clear_stale_role_data
+          }
+          _cmd('migrateRoles', args, nil, 10)
+        end
+
         def set_rack_id(rack_id)
           @rackId = rack_id
           _put_host

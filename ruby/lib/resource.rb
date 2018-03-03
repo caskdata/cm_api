@@ -74,7 +74,6 @@ module CmApi
     def get(relpath = nil, params = nil)
       #  for retry in 0..@retries+1
       #     sleep(@retry_sleep) if retry
-
       return invoke(:get, relpath, params)
     rescue => e
       # TODO: detect timeout and retry

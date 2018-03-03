@@ -40,20 +40,20 @@ class MockResource < ::CmApi::Resource
     exp_method, exp_path, exp_params, exp_data, exp_headers, retdata = @_next_expect
     @_next_expect = nil
 
-    RSpec.describe MockResource do
+    RSpec.describe "MockResource #{[exp_method, exp_path].join(' ')}" do
       unless exp_method.nil?
         it 'receives expected method' do
-          expect(exp_method).to eq method
+          expect(method).to eq exp_method
         end
       end
       unless exp_path.nil?
         it 'receives expected path' do
-          expect(exp_path).to eq relpath
+          expect(relpath).to eq exp_path
         end
       end
       unless exp_params.nil?
         it 'receives expected params' do
-          expect(exp_params).to eq params
+          expect(params).to eq exp_params
         end
       end
       unless exp_data.nil?
@@ -61,12 +61,12 @@ class MockResource < ::CmApi::Resource
           exp_data = Attr.new(nil, true, true).attr_to_json(exp_data, false).to_json
         end
         it 'receives expected data' do
-          expect(exp_data).to eq data
+          expect(data).to eq exp_data
         end
       end
       unless exp_headers.nil?
         it 'receives expected headers' do
-          expect(exp_headers).to eq headers
+          expect(headers).to eq exp_headers
         end
       end
     end

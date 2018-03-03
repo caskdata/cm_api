@@ -93,7 +93,6 @@ module CmApi
 
       # Execute
       # TODO: add logger
-      # puts "#{http_method} #{url}"
       begin
         ::RestClient::Request.execute(rest_client_args)
       rescue => e
