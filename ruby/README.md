@@ -6,11 +6,11 @@ The ruby source is in the `ruby` directory. The Ruby client comes with a
 `cm-api` Ruby client module, and examples on performing certain Hadoop cluster 
 administrative tasks using the Ruby client.
 
-Note, this has been ported directly from the Cloudera Python client. Effort has
+*Note, this has been ported directly from the Cloudera Python client. Effort has
 been made to keep the code structurally as similar to the Python source as
 possible, which in some cases goes against Ruby best practices. This is to ensure
 initial functionality and coverage. The plan is to eventually restructure and 
-optimize for Ruby in a later release.
+optimize for Ruby in a later release.*
 
 Getting Started
 ---------------
